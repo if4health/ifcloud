@@ -12,7 +12,6 @@ const fs = require('fs').promises;
 class OperationController{
     async operationStarter(req, res){
         try{
-
             validateFormOperationStarter(req.body);
 
             const { resourceType, id, scriptName, returnOnlyFieldsComponents, components } = req.body;
@@ -33,6 +32,10 @@ class OperationController{
             const processedData = await processComponentChange(arrDataComponents, scriptName);
 
             components.forEach((component, index) => {
+                // console.log(arrComponentsChanges[index][component.changeField]);
+                // console.log(processedData[index]);
+                
+                
                 arrComponentsChanges[index][component.changeField] = processedData[index].join(" ").replace(/(\r\n|\n|\r)/gm, "");
                 
                 if (returnOnlyFieldsComponents) {
@@ -40,6 +43,7 @@ class OperationController{
                 }
             });
             
+            // return res.send("");
             return res.json(returnOnlyFieldsComponents ? arrFilteredComponents : data);
 
         }catch(e){

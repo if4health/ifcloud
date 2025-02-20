@@ -22,9 +22,8 @@ def main():
 
         results.append(heart_rate)
     
-    json_results = json.dumps(results, cls=NDArrayEncoder, indent=4)
-    write_params_file(params_file, json_results)
-    
+    # json_results = json.dumps(results, cls=NDArrayEncoder, indent=4)
+    write_params_file(params_file, results) 
     print(params_file)
 
 if __name__ == '__main__':

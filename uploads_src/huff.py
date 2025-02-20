@@ -1,10 +1,12 @@
 import sys
 import heapq
+import json
 from collections import defaultdict
-from helpers.file_utils import read_params_file
+from helpers.file_utils import read_params_file, write_params_file
 
 codes = {}
 freq = defaultdict(int)
+minHeap = [] 
 
 class MinHeapNode:
     def __init__(self, data, freq):
@@ -16,26 +18,16 @@ class MinHeapNode:
     def __lt__(self, other):
         return self.freq < other.freq
 
-def printCodes(root, str):
+def storeCodes(root, current_code):
     if root is None:
         return
     if root.data != '$':
-        print(root.data, ":", str)
-    printCodes(root.left, str + "0")
-    printCodes(root.right, str + "1")
+        codes[root.data] = current_code
+    storeCodes(root.left, current_code + "0")
+    storeCodes(root.right, current_code + "1")
 
-def storeCodes(root, str):
-    if root is None:
-        return
-    if root.data != '$':
-        codes[root.data] = str
-    storeCodes(root.left, str + "0")
-    storeCodes(root.right, str + "1")
-
-def HuffmanCodes(size):
+def HuffmanCodes():
     global minHeap
-    for key in freq:
-        minHeap.append(MinHeapNode(key, freq[key]))
     heapq.heapify(minHeap)
     while len(minHeap) != 1:
         left = heapq.heappop(minHeap)
@@ -46,34 +38,36 @@ def HuffmanCodes(size):
         heapq.heappush(minHeap, top)
     storeCodes(minHeap[0], "")
 
-def calcFreq(str, n):
-    for i in range(n):
-        freq[str[i]] += 1
+def calcFreq(string):
+    freq.clear()
+    for char in string:
+        freq[char] += 1
+    for key in freq:
+        minHeap.append(MinHeapNode(key, freq[key]))
 
-def decode_file(root, s):
-    ans = ""
-    curr = root
-    n = len(s)
-    for i in range(n):
-        if s[i] == '0':
-            curr = curr.left
-        else:
-            curr = curr.right
+def process_string(input_string):
+    global codes, freq, minHeap
+    codes.clear() 
+    minHeap = [] 
+    calcFreq(input_string)
+    HuffmanCodes()
 
-        if curr.left is None and curr.right is None:
-            ans += curr.data
-            curr = root
-    return ans + '\0'
+    encoded_string = " ".join(codes[char] for char in input_string)
+    return encoded_string
+
+def main():
+    params_file = sys.argv[1]
+    data = read_params_file(params_file)
+
+    results = []
+    for string in data:
+        encoded_result = process_string(string)
+        results.append([encoded_result])
+
+    json_results = json.dumps(results, indent=4)
+    write_params_file(params_file, json_results)
+    
+    print(params_file)
 
 if __name__ == "__main__":
-    str = read_params_file()
-
-    minHeap = []
-    encodedString, decodedString = "", ""
-    calcFreq(str, len(str))
-    HuffmanCodes(len(str))
-
-    for i in str:
-        encodedString += codes[i]
-
-    print(encodedString)
+    main()

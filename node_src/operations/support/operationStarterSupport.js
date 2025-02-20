@@ -30,5 +30,6 @@ async function runScriptPython(scriptName, components) {
     const run = new runScript();
     await run.verifyScriptExists(scriptName);
     const scriptResult = run.runPythonScript(scriptName, components);
+    
     return scriptResult;
 }

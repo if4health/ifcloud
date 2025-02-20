@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const fsPrimises = require('fs/promises');
 const HandleError = require('./operations/erros/HandleError');
+const { json } = require('body-parser');
 
 module.exports = class RunPythonScript {
     async verifyScriptExists(scriptName) {
@@ -33,7 +34,7 @@ module.exports = class RunPythonScript {
     //     return false;
     // }
 
-    runPythonScript(scriptName, params) {
+    async runPythonScript(scriptName, params) {
         //Caminho base para o upload
         const dirPath = './uploads_src/temp';
         //Pega o timestamp atual
@@ -57,12 +58,53 @@ module.exports = class RunPythonScript {
             //Executa o script py
             const response = execSync(
                 `python3 ./uploads_src/${scriptName} ${paramsFile}`, {
-                    encoding: 'utf8'
+                    encoding: 'utf8',
+                    maxBuffer: 1024 * 1024 * 10
                 }
             );
 
-            const processedFilePath = response.trim();
-            const processedData = JSON.parse(fs.readFileSync(processedFilePath, 'utf8'));
+            console.log(JSON.parse(response));
+            
+            return false;
+            // console.log(JSON.parse(response)[0]);
+            // return response;
+            // console.log(JSON.parse(response[0]));
+            // return false;
+            // const jsonResponse = response.replace(/'/g, '"').trim();
+            // console.log(JSON.parse(jsonResponse));
+            // return jsonResponse;
+
+            // const processedFilePath = response.trim();
+            // const filename = processedFilePath.split('/').pop();
+            // const files = await fsPrimises.readdir('./uploads_src/temp');
+            // console.log(files.includes(filename));
+            // processedData = JSON.parse(fs.readFileSync(processedFilePath, 'utf8'));
+
+            const processedData = fs.readFile(`./uploads_src/temp/${filename}`, 'utf8');
+console.log(processedData);
+
+            return false;
+            
+            // try {
+            //     // Verifica se o arquivo existe
+            //     if (fs.existsSync(processedFilePath)) {
+            //         console.log('Arquivo encontrado:', processedFilePath);
+            
+            //         // Tenta ler o arquivo
+            //         const processedData = fs.readFileSync(processedFilePath, 'utf8');
+            //         console.log('Conteúdo do arquivo:', processedData);
+            //     } else {
+            //         console.error('Erro: Arquivo não encontrado no caminho:', processedFilePath);
+            //     }
+            // } catch (error) {
+            //     console.error('Erro ao acessar o arquivo:', error.message);
+            // }
+
+
+            // const processedData = (fs.readFileSync(processedFilePath, 'utf8'));
+            // console.log(processedData);
+            
+            // return false;
             
             return processedData;
         } catch (e) {
@@ -70,7 +112,7 @@ module.exports = class RunPythonScript {
         } finally {
             // console.log(paramsFile)
             //Quando tudo for executado sem erros, o arquivo txt temporário é excluído
-            fs.unlinkSync(paramsFile);
+            // fs.unlinkSync(paramsFile);
         }
         return false;
     }

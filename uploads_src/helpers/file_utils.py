@@ -35,7 +35,9 @@ def read_params_file(params_file):
 def write_params_file(params_file, data):
     try:
         with open(params_file, 'w') as file:
-            file.write(data)
+            json.dump(data, file)
+            # data_as_str = '\n'.join([str(sublist) for sublist in data])
+            # file.write(data_as_str)
     except IOError:
         print(f"Erro ao escrever no arquivo: {params_file}")
         sys.exit(1)
