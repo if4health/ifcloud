@@ -31,7 +31,4 @@ if __name__ == "__main__":
     print(params_file)
 
     # out = ecg.ecg(signal=signal, sampling_rate=360, show=False)
-
-    # print(list(out[0]))
-
     # sys.stdout.flush()
