@@ -59,7 +59,7 @@ module.exports = class RunPythonScript {
             // Adicionar a linha abaixo após o 'encoding' para suportar saídas maiores de dados do script py
             //maxBuffer: 1024 * 1024 * 10
             const response = execSync(
-                `python3 ./uploads_src/${scriptName} ${paramsFile}`, {
+                `python ./uploads_src/${scriptName} ${paramsFile}`, {
                     encoding: 'utf8'
                 }
             );
@@ -80,7 +80,7 @@ module.exports = class RunPythonScript {
     runPythonScriptNotParams(scriptName) {
         try {
             var response = execSync(
-                `python3 ./uploads_src/${scriptName}`, {
+                `python ./uploads_src/${scriptName}`, {
                     encoding: 'utf8'
                 }
             );
