@@ -47,8 +47,6 @@ module.exports.validateForm = (data) => {
     if (error) {
         const errorText = error.details.map(detail => `- ${detail.message}`).join('<br>');
 
-        return errorText;
+        throw new Error(errorText);
     }
-
-    return null
 };

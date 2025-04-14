@@ -31,22 +31,32 @@ class OperationController{
 
             const processedData = await processComponentChange(arrDataComponents, scriptName);
 
+
             components.forEach((component, index) => {
-                // console.log(arrComponentsChanges[index][component.changeField]);
-                // console.log(processedData[index]);
+                const rawValue = processedData[index];
+                const value = Array.isArray(rawValue) ? rawValue.join(" ") : rawValue;
                 
-                
-                arrComponentsChanges[index][component.changeField] = processedData[index].join(" ").replace(/(\r\n|\n|\r)/gm, "");
-                
+                arrComponentsChanges[index][component.changeField] = value?.toString().replace(/(\r\n|\n|\r)/gm, "");
+            
                 if (returnOnlyFieldsComponents) {
                     arrFilteredComponents.push(arrComponentsChanges[index]);
                 }
             });
             
-            // return res.send("");
             return res.json(returnOnlyFieldsComponents ? arrFilteredComponents : data);
 
         }catch(e){
+            console.log(e);
+            
+            if (e?.response?.data) {
+                return res.send({
+                    "status": "error",
+                    "statusCode": 400,
+                    "errors": {
+                        "message": e.response.data
+                    }
+                });
+            }
             return res.status(e.statusCode || 500).json(e || "Internal server error");
         }
     }
@@ -78,9 +88,9 @@ class OperationController{
 
             for (let fieldIndex = 0; fieldIndex < changeField.length; fieldIndex++) {
                 const componentChange = getComponentChangeForm(fhirComponents, componentIndex[fieldIndex]);
-                if (Array.isArray(componentChange) && !componentChange[0]) {
-                    return res.send(componentChange[1]);
-                }
+                // if (Array.isArray(componentChange) && !componentChange[0]) {
+                //     return res.send(componentChange[1]);
+                // }
 
                 response.components.push({
                     "index": componentIndex[fieldIndex],
@@ -90,18 +100,25 @@ class OperationController{
 
                 arrComponentsChanges.push(componentChange);
                 const dataFromComponent = getDataFromComponentForm(componentChange, changeField[fieldIndex]);
-                if (Array.isArray(dataFromComponent) && !dataFromComponent[0]) {
-                    return res.send(dataFromComponent[1]);
-                }
+                // if (Array.isArray(dataFromComponent) && !dataFromComponent[0]) {
+                //     return res.send(dataFromComponent[1]);
+                // }
                 arrDataComponents.push(dataFromComponent);
 
             }
 
             const processedData = await processComponentChangeForm(arrDataComponents, scriptName);
+            
+            // if (Array.isArray(processedData) && !processedData[0]) {
+            //     return res.send(processedData[1]);
+            // }
 
             for (let fieldIndex = 0; fieldIndex < changeField.length; fieldIndex++) {
-                arrComponentsChanges[fieldIndex][changeField[fieldIndex]] = processedData[fieldIndex].join(" ").replace(/(\r\n|\n|\r)/gm, "");
-
+                const rawValue = processedData[fieldIndex];
+                const value = Array.isArray(rawValue) ? rawValue.join(" ") : rawValue;
+                
+                arrComponentsChanges[fieldIndex][changeField[fieldIndex]] = value?.toString().replace(/(\r\n|\n|\r)/gm, "");
+            
                 if (onlyComponent) {
                     arrFilteredComponents.push(arrComponentsChanges[fieldIndex]);
                 }
@@ -113,9 +130,13 @@ class OperationController{
 
             return res.send({...data});
         }catch(e){
+            // FASSECG ERROR
+            if (e?.response?.data) {
+                return res.send(e.response.data);
+            }
             console.log(e);
-            return res.send("Internal server error");
-            // return res.status(e.statusCode || 500).json(e || "Internal server error");
+            // DEFAULT ERRORS
+            return res.send(e.message);
         }
     }
 

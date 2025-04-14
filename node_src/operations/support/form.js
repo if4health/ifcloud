@@ -6,25 +6,29 @@ module.exports.getComponentChangeForm = (components, index) => {
     if (Array.isArray(components) && components[index] && components[index].valueSampledData) {
         return components[index].valueSampledData;
     }
-    return [false, "Index or changeField does not exists!"];
+    throw new Error("Index or changeField does not exists!");
+    // return [false, "Index or changeField does not exists!"];
 }
 
 module.exports.getDataFromComponentForm = (componentChange, changeField) => {
     if (componentChange[changeField]) {
         return componentChange[changeField];
     }
-    return [false, "ChangeField does not exists!"];
+    throw new Error("ChangeField does not exists!");
+    // return [false, "ChangeField does not exists!"];
 }
 
 module.exports.processComponentChangeForm = async (components, scriptName) => {
     const fileExists = await verifyScriptExists(scriptName);
     if (!fileExists) {
-        return [false, `Script "${scriptName}" not found`];
+        throw new Error(`Script "${scriptName}" not found`);
+        // return [false, `Script "${scriptName}" not found`];
     }
 
     const scriptReturned = await runScriptPython(scriptName, components);
     if (!scriptReturned) {
-        return [false, "Python script return error"];
+        throw new Error("Python script return error");
+        // return [false, "Python script return error"];
     }
 
     return scriptReturned;
