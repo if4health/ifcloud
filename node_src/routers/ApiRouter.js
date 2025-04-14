@@ -19,7 +19,10 @@ router.get("/ifcloud/file_upload", (req, res)=>{
             console.log(err);
             return res.render('file_upload');
         }
-        return res.render('file_upload', {files});
+
+        // Filtra apenas os arquivos .py
+        const pyFiles = files.filter(file => path.extname(file) === '.py');
+        return res.render('file_upload', { files: pyFiles });
     })
 });
 
