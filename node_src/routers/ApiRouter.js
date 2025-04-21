@@ -9,11 +9,11 @@ router.use(fileUpload());
 
 const FileUploadController = require('../controllers/FileUploadController');
 
-router.get("/ifcloud/home", (req, res)=>{
+router.get("/home", (req, res)=>{
     res.render('home');
 });
 
-router.get("/ifcloud/file_upload", (req, res)=>{
+router.get("/file_upload", (req, res)=>{
     fs.readdir('./uploads_src', (err, files) => {
         if(err){
             console.log(err);
@@ -26,18 +26,18 @@ router.get("/ifcloud/file_upload", (req, res)=>{
     })
 });
 
-router.get("/ifcloud/json_form", (req, res)=>{
+router.get("/json_form", (req, res)=>{
     res.render('json_form');
 });
 
-router.get("/ifcloud/about", (req, res)=>{
+router.get("/about", (req, res)=>{
     res.render('about');
 });
 
-router.get("/ifcloud/form_example", (req, res)=>{
+router.get("/form_example", (req, res)=>{
     res.render('form_example', {req});
 });
 
-router.post("/ifcloud/uploader", FileUploadController.scriptUploader);
+router.post("/uploader", FileUploadController.scriptUploader);
 
 module.exports = router;
