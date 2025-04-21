@@ -22,11 +22,11 @@ app.use(allowCrossDomain);
 
 app.use(bp.json({limit: '50mb', extended: true}))
    .use(bp.urlencoded({limit: '50mb', extended: true }))
-   .use(apiRouter)
-   .use(directRouter)
-   .use(extensionRouter)
-   .use(operationRouter)
-   .use(express.static(path.join(process.cwd(), "html_src")));
+   .use('/ifcloud', apiRouter)
+   .use('/ifcloud', directRouter)
+   .use('/ifcloud', extensionRouter)
+   .use('/ifcloud', operationRouter)
+   .use('/ifcloud', express.static(path.join(process.cwd(), "html_src")));
 
 app.listen(PORT, () => {
   console.log("server started on port: " + PORT);
