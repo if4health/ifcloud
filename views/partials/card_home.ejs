@@ -28,10 +28,14 @@
             <p>
                 Antes do upload, todos os scripts Python vão precisar adicionar:
                 <ol>
-                    <li>importar <code>from helpers.file_utils import read_params_file</code></li>
+                    <li>importar <code>from helpers.file_utils import read_params_file, write_params_file</code></li>
+                    <li>fazer a leitura do arquivo com os dados do ECG <code>params_file = sys.argv[1]</code></li>
                     <li>carregar a entrada de dados com <code>data = read_params_file(params_file)</code></li>
+                    <li>o resultado do processamento deve ser um array com uma string de resultados, conforme o exemplo: <code>['1 0 0 0 1 0 1', '1 0 1 0 1 1 1 1 0 0 1']</code></li>
+                    <li>Ao final do script deve-se escrever os dados no arquivo que foi recebido na requisição desta forma: <code>write_params_file(params_file, results) </code></li>
+                    <li>Após isso, basta utilizar o comando <code>print</code> para retornar o nome do arquivo desta maneira: <code>print(params_file)</code></li>
                 </ol> 
-                Veja exemplos de scripts Python com essas mudanças no diretório <code>testfiles</code> do <a href="https://github.com/if4health/ifcloud" target="_blank">código-fonte de IF-Cloud</a>
+                Veja exemplos de scripts Python com essas mudanças no diretório <code>uploads_src</code> do <a href="https://github.com/if4health/ifcloud" target="_blank">código-fonte de IF-Cloud</a>
 
             </p>
         </div>
@@ -48,18 +52,15 @@
             </p>
             <img id="img_json_form" src="/ifcloud/IMG/JSON_FORM.png" alt="">
             <p><b>- resourceType:</b> do tipo "String", tipo de resource, pode ser Observation ou Patiente.</p>
-            <p><b>- id:</b> do tipo "String", id do resource salvo na CloudECG.</p>
+            <p><b>- Resource Id:</b> do tipo "String", id do resource salvo na API FHIR.</p>
             <p><b>- scriptName:</b> do tipo "String", nome do script em Python desejado.</p>
-            <p><b>- haveInputParams:</b> do tipo "Boolean", se existem paramestros adicionais que devem ser
-                passados para a nuvem.
+            <p><b>- Component Index:</b> do tipo "Int", índice do JSON FHIR na chave <code>component</code>
             </p>
-            <p><b>- inputParams:</b> do tipo "Array String", paremetros adicionais.</p>
-            <p><b>- index:</b> do tipo "String", indice do componente salvo dentro do resource que desejado
-                ser alterado.
-            .</p>
-            <p><b>- changeField:</b> do tipo "String", campo do componente selecionado que deve ser alterado.</p>
+            <p><b>- changeField:</b> do tipo "String", chave que deseja ser alterada dentro do objeto <code>valueSampledData</code> após o processamento dos dados</p>
             <p><b>- returnOnlyFieldsComponent:</b> do tipo "Boolean", se deve ser retornado todos os campos
                 do resource alterado ou somente do componente.
+            </p>
+            <p><b>- Adicionar Componente:</b> Caso o script utilize mais de uma variação durante o seu processamento deve ser informadas as n derivações por meio deste botão.
             </p>
 
         </div>
