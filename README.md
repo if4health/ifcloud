@@ -17,7 +17,7 @@ IF-Cloud auomatiza a execução de scripts Python que tem upload realizado por m
 
 
 IF-Cloud depende de uma API FHIR com operações CRUD para fornecer os dados a serem processados, pois não tem banco de dados. Diversas implementações de APIs FHIR em nuvem estão disponíveis para realizar as operações CRUD.
-Nós recomendamos a [nossa API FHIR especializada em biossinais](https://biosignalinfhir.if4health.com.br/api-docs/) e você encontra o código fonte [neste link](https://github.com/if4health/FASS-ECG). Alternativamente, IF-Cloud também pode utilizar recursos FHIR da API pública de testes [HAPI FHIR](https://hapi.fhir.org/baseR4/swagger-ui/).
+Nós recomendamos a [nossa API FHIR especializada em biossinais](https://if4health.charqueadas.ifsul.edu.br/biosignalinfhir/api-docs/) e você encontra o código fonte [neste link](https://github.com/if4health/FASS-ECG). Alternativamente, IF-Cloud também pode utilizar recursos FHIR da API pública de testes [HAPI FHIR](https://hapi.fhir.org/baseR4/swagger-ui/).
 
 
 ## Instalação
@@ -30,6 +30,9 @@ git clone https://github.com/if4health/ifcloud .
 | Rota | Descrição |
 |------|-----------|
 | `FHIR_API_URL` | URL da API FHIR que realiza as operações CRUD |
+| `PORT` | Porta na qual a aplicação irá rodar |
+| `AUTHORIZATION_CODE` | Token de autorização da API FHIR |
+| `CLIENT_ID` | Regra de autenticação na API FHIR |
 
 
 3. Instale as dependencias de NodeJS para este projeto 
@@ -59,23 +62,25 @@ http://localhost:8000/ifcloud/home
 {
     "resourceType": "Observation",
     "id": ":id_from_CRUD_API",
-    "scriptName": "huff.py",
-    "component":
-    {
-        "index": "2",
-        "changeField": "data",
-        "returnOnlyFieldsComponent": false
-    }
+    "scriptName": "HelloWorld.py",
+    "returnOnlyFieldsComponents": true,
+    "components": [
+        {
+            "index": "0",
+            "changeField": "data"
+        }
+    ]
 }
 ```
 
 - `resourceType` - tipo de Recurso FHIR que IF-Cloud deverá buscar na API de CRUD;
 - `id` - identificador do Recurso FHIR que a aplicação deverá buscar na API de CRUD;
 - `scriptName` - nome do script disponível no diretório Python SRC a ser executado.
-- `component` - Configura qual a chave do Recurso FHIR a ser buscado deve ser alterado ou retornado pelo script configurado em `scriptName`.
+- `returnOnlyFieldsComponents` - se IF-Cloud irá retornar somente os campos alterados ou todo o Recurso FHIR para o solicitante.
+- `components` - Configura quais as chaves do Recurso FHIR a serem buscadas e serem alteradas ou retornadas pelo script configurado em `scriptName`. Este pode ter **n** objetos de configuração, irá depender se o recurso **FHIR** contém as chaves e os índices.
+    - `index` - índice da chave `changeField` a ser alterado no Recurso FHIR;
 	- `changeField` - determina qual a chave do Recurso FHIR deverá ser alterada;
-	- `index` - índice da chave `changeField` a ser alterado no Recurso FHIR;
-	- `returnOnlyFieldsComponent` - se IF-Cloud irá retornar somente os campos alterados ou todo o Recurso FHIR para o solicitante.
+	
 
 
 ![Interface de Usuário do IF-Cloud](./img/IF-Cloud-UI.png)
@@ -96,11 +101,12 @@ A chamada por **rota direta** é indicada para testes de funcionamento do própr
 A chamada na **rota principal** é o método de execução dos scripts cuja resposta pode ser retornada em um recurso FHIR. Sempre que IF-Cloud receber uma requisição na rota principal, é necessário buscar os dados salvos na API de CRUD para serem sobrescritos com processamento intermediado pelos scripts salvos em IF-Cloud. 
 
  
-| Rota               | Metodo | Descricao                                                                                                  |
-|--------------------|--------|------------------------------------------------------------------------------------------------------------|
-| `/run_script/direct/:script_name` | GET | Executa o script `script_name` salvo em IF-Cloud sem parâmetros de entrada |
-| `/run_script/direct/params` | POST | Executa um script salvo em IF-Cloud com parâmetros de entrada `{"scriptName": ":script_name", "params": ":params_list"}` |
-| `/run_script/operation` | POST | IF-Cloud executa um script de acordo com o **JSON de configuração** e modifica o conteúdo de uma chave de um recurso FHIR proveniente da API de CRUD `$(FHIR_API_URL)` |
+| Rota | Metodo | Descricao| Exemplo|
+|----------------------------------|--------|------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| `/run_script/direct/params`      | POST   | Executa um script salvo em IF-Cloud com parâmetros de entrada `{"scriptName": ":script_name", "params": [":params_array"]}` | `{"scriptName: "HelloWorld.py", "params": ["949.0 948.0 950.0 950.0 951.0", "977.0 977.0 975.0 978.0 978.0 979.0 976.0"]}` |
+| `/run_script/direct/HelloWorld.py`| GET    | Executa o script `HelloWorld.py` salvo em IF-Cloud para testar se a aplicação instalada corretamente. Não precisa de parâmetros | `---------------------------------------------------------------------------`|
+| `/run_script/operation`         | POST   | IF-Cloud executa um script de acordo com o **JSON de configuração** e modifica o conteúdo de uma chave de um recurso FHIR proveniente da API de CRUD `$(FHIR_API_URL)` | Acesse nesta documentação o **JSON de configuração** para realizar testes  |
+
 
 
 ## Casos de teste
