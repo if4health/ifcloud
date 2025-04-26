@@ -124,7 +124,7 @@ O diretório `testfiles` contém o seguinte material para iniciantes no IF-Cloud
 
 1. O arquivo `FHIR-Observation-1-lead-ECG-snippet.json` contém um trecho de um ECG de uma derivação descrito como um recurso FHIR Observation para ser inserido em `$(FHIR_API_URL)`.
 2. O script `HelloWorld.py` serve para você testar a implantação de IF-cloud na nuvem ou no localhost na rota `GET $(URL_IFCLOUD)/run_script/direct/HelloWorld.py`
-3. O script `calcBPM.py` realiza o cálculo da frequência cardíaca de um determinado ECG. **Entrada**: Uma string com as amostras descrevendo o sinal temporal do ECG. **Saída**: Uma string com os valores da variância da frequência cardíaca em BPM (batimento por minuto).
+3. O script `calcBPM.py` realiza o cálculo da frequência cardíaca de um determinado ECG. **Entrada**: Caminho para um arquivo .txt que contém as derivações no seguinte formato dentro do arquivo: `["953.0 951.0 949.0 948.0 950.0 950.0 951.0 948.0 946.0 944.0 947.0 947.0 947.0 943.0 944.0 943.0 943.0 944.0 944.0 947.0 946.0 946.0 945.0 950.0 951.0 953.0 952.0 954.0 957.0"]`. **Saída**: Caminho do arquivo de entrada com os valore gravados dentro dele.
 4. Utilize `params-route-direct.json` no corpo da requisição `POST $(URL_IFCLOUD)/run_script/direct/params` que IF-Cloud vai retornar o vetor de BPMs do ECG
 5. Utilize `config-ifcloud.json` no corpo da requisição `POST $(URL_IFCLOUD)/run_script/operation` que IF-Cloud vai retornar o vetor de BPMs do ECG descrito como um FHIR Observation. 
 	- Não esqueça de substituir `:id_from_CRUD_API` pelo ID que a API FHIR responder após o `POST` de `FHIR-Observation-1-lead-ECG-snippet.json`.

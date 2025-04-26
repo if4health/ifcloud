@@ -1,0 +1,11 @@
+{
+    "resourceType": "Observation",
+    "id": ":id_from_CRUD_API",
+    "scriptName": "calcBPM.py",
+    "returnOnlyFieldsComponents": false,
+    "component":
+    {
+        "index": "0",
+        "changeField": "data"
+    }
+}
