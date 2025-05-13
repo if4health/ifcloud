@@ -2,5 +2,6 @@ uploads_src_ignore/
 venv/
 uploads_src/__pycache__/
 uploads_src/helpers/__pycache__/
+node_modules/
 .git
 .env
