@@ -3,9 +3,14 @@
     "id": ":id_from_CRUD_API",
     "scriptName": "calcBPM.py",
     "returnOnlyFieldsComponents": false,
-    "component":
-    {
-        "index": "0",
-        "changeField": "data"
-    }
+    "component": [
+        {
+            "index": "0",
+            "changeField": "data"
+        },
+        {
+            "index": "1",
+            "changeField": "data"
+        }
+    ]
 }
