@@ -27,6 +27,7 @@ git clone https://github.com/if4health/ifcloud .
 ```
 2. Configure variáveis de ambiente:
 
+Na pasta raiz do projeto, temos um arquivo `.env.example`. Você deve renomear este arquivo para `.env` e seguir as instruções abaixo:
 | Rota | Descrição |
 |------|-----------|
 | `FHIR_API_URL` | URL da API FHIR que realiza as operações CRUD |
