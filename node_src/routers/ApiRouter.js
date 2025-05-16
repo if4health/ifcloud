@@ -10,7 +10,9 @@ router.use(fileUpload());
 const FileUploadController = require('../controllers/FileUploadController');
 
 router.get("/ifcloud/home", (req, res)=>{
-    res.render('home');
+    res.render('home', {
+        API_URL: process.env.API_URL
+      });
 });
 
 router.get("/ifcloud/file_upload", (req, res)=>{

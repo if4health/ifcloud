@@ -10,26 +10,20 @@
         <div class="home_card">
             <p><b>1. Rota direta</b>:</p>
             <p>Nesta rota é possivel rodar "scripts python" que estejam no servidor diretamente.</p>
-            <p><b>Rota = <%=process.env.API_URL%>/run_script/direct/:script_name</b></p>
+            <p><b>Rota = <%=API_URL%>/run_script/direct/:script_name</b></p>
             <p># - ":script_name" = passar o nome de um script que exista no servidor.</p>
         </div>
 
         <div class="home_card">
-            <p><b>2. Rota utilizando Resource FHIR Patient:</b></p>
-            <p>Nesta rota é possivel rodar "scripts python" buscando por "Patient" na API CloudECG.</p>
-            <p><b>Rota = <%=process.env.API_URL%>/run_script/patient/:id</b></p>
-            <p># - ":id" = passar um "id" de um "Patient" existente no servidor da API.</p>
+            <p><b>2. Rota utilizando parâmetros:</b></p>
+            <p>Nesta rota é possivel rodar "scripts python" utilizando chaves em um json de configuração sem a necessidade de um ID do resource</p>
+            <p><b>Rota = <%=process.env.API_URL%>/run_script/direct/params</b></p>
+            <p># - ":scriptName" = passar o "nome do script" disponível em <strong>IFCLOUD</strong>.</p>
+            <p># - ":params" = passar "uma string" de parâmetros para executar o script. Exemplo: "962.0 962.0 962.0 962.0 962.0 962.0 962.0 962.0 966.0 967.0 965.0 961.0 963.0 964.0 968.0 969.0 969.0 970.0 972.0 976.0 979.0"</p>
         </div>
 
         <div class="home_card">
-            <p><b>3. Rota utilizando Resource FHIR Observation:</b></p>
-            <p>Nesta rota é possivel rodar "scripts python" buscando por "Observation" na API CloudECG.</p>
-            <p><b>Rota = <%=process.env.API_URL%>/if_cloud/run_script/observation/:id</b></p>
-            <p># - ":id" = passar um "id" de um "Observation" existente no servidor da AP.</p>
-        </div>
-
-        <div class="home_card">
-            <p><b>4. Upload de arquivos:</b></p>
+            <p><b>3. Upload de arquivos:</b></p>
             <p>Na aba "Upload" é possivel fazer o upload de scripts Python, eles ficaram salvos
             na nuvem e poderam ser acessados a qualquer momento.
             </p>
@@ -37,9 +31,9 @@
         </div>
 
         <div class="home_card">
-            <p><b>5. Rotas utilizando Operations:</b></p>
+            <p><b>4. Rotas utilizando Operations:</b></p>
             <p>Nesta rota é possivel rodar scripts Python que estejam na nuvem, interagindo com 
-                os Resources vindos da CloudECG, como Patient e Observation.
+                os Resources vindos do FASSECG, como Patient e Observation.
             </p>
             <p><b>Rota = <%=process.env.API_URL%>/run_script/operation</b></p>
             <p>Esta rota esta acessivel e pode ser usada atraves de requisições HTTP, enviando
@@ -47,17 +41,10 @@
             </p>
             <p>Este JSON permite setar algumas informações importantes para o funcionamento da engine.</p>
             <p>JSON padrão:</p>
-            <img id="img_json_form" src="/IMG/JSON_FORM.png" alt="">
+            <img id="img_json_form" src="/img/JSON_FORM.png" alt="">
             <p><b>- resourceType:</b> do tipo "String", tipo de resource, pode ser Observation ou Patiente.</p>
-            <p><b>- id:</b> do tipo "String", id do resource salvo na CloudECG.</p>
+            <p><b>- Resource Id:</b> do tipo "String", id do resource salvo na CloudECG.</p>
             <p><b>- scriptName:</b> do tipo "String", nome do script em Python desejado.</p>
-            <p><b>- haveInputParams:</b> do tipo "Boolean", se existem paramestros adicionais que devem ser
-                passados para a nuvem.
-            </p>
-            <p><b>- inputParams:</b> do tipo "Array String", paremetros adicionais.</p>
-            <p><b>- index:</b> do tipo "String", indice do componente salvo dentro do resource que desejado
-                ser alterado.
-            .</p>
             <p><b>- changeField:</b> do tipo "String", campo do componente selecionado que deve ser alterado.</p>
             <p><b>- returnOnlyFieldsComponent:</b> do tipo "Boolean", se deve ser retornado todos os campos
                 do resource alterado ou somente do componente.
