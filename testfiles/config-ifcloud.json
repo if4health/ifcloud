@@ -1,0 +1,11 @@
+{
+    "resourceType": "Observation",
+    "id": ":id_from_FASSECG_API",
+    "scriptName": "calcBPM.py",
+    "component":
+    {
+        "index": "0",
+        "changeField": "data",
+        "returnOnlyFieldsComponent": false
+    }
+}
