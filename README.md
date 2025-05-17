@@ -54,7 +54,7 @@ npm start
 ```
 Visualize o IF-Cloud rodando no navegador:
 ```sh
-http://localhost:8000/ifcloud/home
+http://localhost:{PORTA_ESCOLHIDA}/ifcloud/home
 ```
 
 **JSON de Configuração** de IF-Cloud para fins de controle do fluxo de dados da interface e da automação dos scripts Python.
