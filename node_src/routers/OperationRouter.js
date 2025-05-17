@@ -5,6 +5,6 @@ const OperationController = require('../controllers/OperationController');
 
 router.post("/run_script/operation", OperationController.operationStarter);
 
-router.post("/ifcloud/myForm", OperationController.myForm);
+router.post("/myForm", OperationController.myForm);
 
 module.exports = router;

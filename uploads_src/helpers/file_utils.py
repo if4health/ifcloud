@@ -26,7 +26,10 @@ import sys
 def read_params_file(params_file):
     try:
         with open(params_file, 'r') as file:
-            data = json.loads(file.read().strip())
+            content = file.read().strip()
+            if not content:
+                return []
+            data = json.loads(content)
         return data
     except IOError:
         print(f"Erro ao abrir o arquivo: {params_file}")
