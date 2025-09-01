@@ -11,7 +11,6 @@ module.exports.getComponentChange = (components, index) => {
 
 module.exports.processComponentChange = async (components, scriptName) => {
     const scriptReturned = await runScriptPython(scriptName, components);
-    
     if (!scriptReturned) {
         throw new HandleError("Python script return error");
     }

@@ -23,6 +23,7 @@ class DirectController{
 
     async runScriptWithParams(req, res){
         try {
+
             validateFormRunScriptWithParams(req.body);
             
             const { scriptName, params } = req.body;

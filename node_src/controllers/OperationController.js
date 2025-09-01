@@ -8,6 +8,7 @@ const { validateForm } = require("../operations/validations/validationForm");
 const { getComponentChangeForm, processComponentChangeForm, getDataFromComponentForm } = require("../operations/support/form");
 const fs = require('fs').promises;
 
+            require("dotenv").config();
 
 class OperationController{
     async operationStarter(req, res){
@@ -30,7 +31,6 @@ class OperationController{
             }
 
             const processedData = await processComponentChange(arrDataComponents, scriptName);
-
 
             components.forEach((component, index) => {
                 const rawValue = processedData[index];
@@ -164,8 +164,5 @@ class OperationController{
         }
     }
 }
-
-
-
 
 module.exports = new OperationController();
