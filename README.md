@@ -32,8 +32,9 @@ Na pasta raiz do projeto, temos um arquivo `.env.example`. Você deve renomear e
 |------|-----------|
 | `FHIR_API_URL` | URL da API FHIR que realiza as operações CRUD |
 | `PORT` | Porta na qual a aplicação irá rodar |
-| `AUTHORIZATION_CODE` | Token de autorização da API FHIR |
-| `CLIENT_ID` | Regra de autenticação na API FHIR |
+| `GRANT_TYPE` | Tipo de autorização da API FHIR - Disponível em: https://if4health.charqueadas.ifsul.edu.br/biofass/auth/device |
+| `CLIENT_ID` | Regra de autenticação na API FHIR - Disponível em: https://if4health.charqueadas.ifsul.edu.br/biofass/auth/device |
+| `CLIENT_SECRET` | Segredo de autorização da API FHIR - Disponível em: https://if4health.charqueadas.ifsul.edu.br/biofass/auth/device |
 
 
 3. Instale as dependencias de NodeJS para este projeto 
