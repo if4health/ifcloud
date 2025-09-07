@@ -19,15 +19,24 @@
             <p>Nesta rota é possivel rodar "scripts python" utilizando chaves em um json de configuração sem a necessidade de um ID do resource</p>
             <p><b>Rota = <%=process.env.API_URL%>/run_script/direct/params</b></p>
             <p># - ":scriptName" = passar o "nome do script" disponível em <strong>IFCLOUD</strong>.</p>
-            <p># - ":params" = passar "uma string" de parâmetros para executar o script. Exemplo: "962.0 962.0 962.0 962.0 962.0 962.0 962.0 962.0 966.0 967.0 965.0 961.0 963.0 964.0 968.0 969.0 969.0 970.0 972.0 976.0 979.0"</p>
+            <p># - ":params" = passar "uma string" de parâmetros para executar o script</p>
+            <p># - Exemplo de utilização: </p>
+            <p>
+                {
+                    <br>
+                        &nbsp;&nbsp;scriptName: "calcBPM.py",<br>
+                        &nbsp;&nbsp;params: "962.0 962.0 962.0 962.0 962.0 962.0 962.0 962.0 966.0 967.0 965.0 961.0 963.0 964.0 968.0 969.0 969.0 970.0 972.0 976.0 979.0"
+                    <br>
+                }
+            </p>
         </div>
 
         <div class="home_card">
             <p><b>3. Upload de arquivos:</b></p>
             <p>Na aba "Upload" é possivel fazer o upload de scripts Python, eles ficaram salvos
-            na nuvem e poderam ser acessados a qualquer momento.
+            na nuvem e podem ser acessados a qualquer momento.
             </p>
-            <p>Selecionar um script em python para fazer upload no servidor, somente arquivos ".py".</p>
+            <p>Selecionar um script python para fazer upload no servidor, somente arquivos ".py".</p>
         </div>
 
         <div class="home_card">
@@ -36,15 +45,29 @@
                 os Resources vindos do FASSECG, como Patient e Observation.
             </p>
             <p><b>Rota = <%=process.env.API_URL%>/run_script/operation</b></p>
-            <p>Esta rota esta acessivel e pode ser usada atraves de requisições HTTP, enviando
+            <p>Esta rota está acessível e pode ser usada através de requisições HTTP, enviando
                 um JSON padrão, criado especialmente para esta aplicação.
             </p>
             <p>Este JSON permite setar algumas informações importantes para o funcionamento da engine.</p>
-            <p>JSON padrão:</p>
-            <img id="img_json_form" src="/img/JSON_FORM.png" alt="">
+            <p><strong>JSON padrão:</strong></p>
+            
+            <p>
+                {
+                    <br>
+                        &nbsp;&nbsp;resourceType: "Observation",<br> 
+                        &nbsp;&nbsp;id: "id_from_FASSECG_API",<br> 
+                        &nbsp;&nbsp;scriptName: "ifcloud_script.py",<br> 
+                        &nbsp;&nbsp;component: {<br> 
+                            &nbsp;&nbsp;&nbsp;&nbsp;index: "0",<br> 
+                            &nbsp;&nbsp;&nbsp;&nbsp;changeField: "data",<br> 
+                            &nbsp;&nbsp;&nbsp;&nbsp;returnOnlyFieldsComponent: true<br> 
+                &nbsp;&nbsp;}<br>
+            </p>
+
             <p><b>- resourceType:</b> do tipo "String", tipo de resource, pode ser Observation ou Patiente.</p>
-            <p><b>- Resource Id:</b> do tipo "String", id do resource salvo na CloudECG.</p>
+            <p><b>- id:</b> do tipo "String", id do resource salvo na CloudECG.</p>
             <p><b>- scriptName:</b> do tipo "String", nome do script em Python desejado.</p>
+            <p><b>- index:</b> do tipo "String", índice do JSON FHIR a ser utilizado no script selecionado</p>
             <p><b>- changeField:</b> do tipo "String", campo do componente selecionado que deve ser alterado.</p>
             <p><b>- returnOnlyFieldsComponent:</b> do tipo "Boolean", se deve ser retornado todos os campos
                 do resource alterado ou somente do componente.
