@@ -102,13 +102,20 @@ A chamada por **rota direta** é indicada para testes de funcionamento do própr
 
 A chamada na **rota principal** é o método de execução dos scripts cuja resposta pode ser retornada em um recurso FHIR. Sempre que IF-Cloud receber uma requisição na rota principal, é necessário buscar os dados salvos na API de CRUD para serem sobrescritos com processamento intermediado pelos scripts salvos em IF-Cloud. 
 
- 
-| Rota | Metodo | Descricao| Exemplo|
-|----------------------------------|--------|------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|
-| `/run_script/direct/params`      | POST   | Executa um script salvo em IF-Cloud com parâmetros de entrada `{"scriptName": ":script_name", "params": [":params_array"]}` | `{"scriptName: "HelloWorld.py", "params": ["949.0 948.0 950.0 950.0 951.0", "977.0 977.0 975.0 978.0 978.0 979.0 976.0"]}` |
-| `/run_script/direct/HelloWorld.py`| GET    | Executa o script `HelloWorld.py` salvo em IF-Cloud para testar se a aplicação instalada corretamente. Não precisa de parâmetros | `---------------------------------------------------------------------------`|
-| `/run_script/operation`         | POST   | IF-Cloud executa um script de acordo com o **JSON de configuração** e modifica o conteúdo de uma chave de um recurso FHIR proveniente da API de CRUD `$(FHIR_API_URL)` | Acesse nesta documentação o **JSON de configuração** para realizar testes  |
+| Rota                         | Método | Descrição                                                                                                      | Exemplo |
+|------------------------------|--------|----------------------------------------------------------------------------------------------------------------|---------|
+| `/run_script/direct/params`  | POST   | Executa um script salvo em IF-Cloud com parâmetros de entrada.                                                 | Veja abaixo |
+| `/run_script/direct/HelloWorld.py` | GET | Executa o script `HelloWorld.py` salvo em IF-Cloud para testar se a aplicação foi instalada corretamente. Não precisa de parâmetros. | N/A     |
+| `/run_script/operation`      | POST   | IF-Cloud executa um script de acordo com o **JSON de configuração** e modifica o conteúdo de uma chave de um recurso FHIR proveniente da API de CRUD `$(FHIR_API_URL)`. | Veja documentação |
 
+### Exemplo de chamada para `/run_script/direct/params`
+
+```json
+{
+  "scriptName": "HelloWorld.py",
+  "params": ["949.0 948.0 950.0 950.0 951.0 977.0 977.0 975.0 978.0 978.0 979.0 976.0"]
+}
+```
 
 
 ## Casos de teste
@@ -126,7 +133,7 @@ O diretório `testfiles` contém o seguinte material para iniciantes no IF-Cloud
 
 1. O arquivo `FHIR-Observation-1-lead-ECG-snippet.json` contém um trecho de um ECG de uma derivação descrito como um recurso FHIR Observation para ser inserido em `$(FHIR_API_URL)`.
 2. O script `HelloWorld.py` serve para você testar a implantação de IF-cloud na nuvem ou no localhost na rota `GET $(URL_IFCLOUD)/run_script/direct/HelloWorld.py`
-3. O script `calcBPM.py` realiza o cálculo da frequência cardíaca de um determinado ECG. **Entrada**: Caminho para um arquivo .txt que contém as derivações no seguinte formato dentro do arquivo: `["953.0 951.0 949.0 948.0 950.0 950.0 951.0 948.0 946.0 944.0 947.0 947.0 947.0 943.0 944.0 943.0 943.0 944.0 944.0 947.0 946.0 946.0 945.0 950.0 951.0 953.0 952.0 954.0 957.0"]`. **Saída**: Caminho do arquivo de entrada com os valore gravados dentro dele.
+3. O script `calcBPM.py` realiza o cálculo da frequência cardíaca de um determinado ECG. **Entrada**: Caminho para um arquivo .txt que contém as derivações no formate de um array com as derivações no formato de strings. **Saída**: Caminho do arquivo de entrada com os valore gravados dentro dele.
 4. Utilize `params-route-direct.json` no corpo da requisição `POST $(URL_IFCLOUD)/run_script/direct/params` que IF-Cloud vai retornar o vetor de BPMs do ECG
 5. Utilize `config-ifcloud.json` no corpo da requisição `POST $(URL_IFCLOUD)/run_script/operation` que IF-Cloud vai retornar o vetor de BPMs do ECG descrito como um FHIR Observation. 
 	- Não esqueça de substituir `:id_from_CRUD_API` pelo ID que a API FHIR responder após o `POST` de `FHIR-Observation-1-lead-ECG-snippet.json`.

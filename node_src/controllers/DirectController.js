@@ -5,7 +5,6 @@ const runScript = require("../RunPythonScript");
 const fs = require('fs/promises');
 
 class DirectController{
-
     async runScriptByScriptName(req, res){
         try {
             const run = new runScript();
@@ -23,7 +22,6 @@ class DirectController{
 
     async runScriptWithParams(req, res){
         try {
-
             validateFormRunScriptWithParams(req.body);
             
             const { scriptName, params } = req.body;

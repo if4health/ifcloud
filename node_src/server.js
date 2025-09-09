@@ -2,7 +2,7 @@ const path = require("path");
 const express = require("express");
 const app = express();
 const bp = require('body-parser');
-const apiRouter = require('./routers/ApiRouter');
+const viewRouter = require('./routers/ViewRouter');
 const directRouter = require('./routers/DirectRouter');
 const operationRouter = require('./routers/OperationRouter');
 require("dotenv").config();
@@ -21,7 +21,7 @@ app.use(allowCrossDomain);
 
 app.use(bp.json({limit: '50mb', extended: true}))
    .use(bp.urlencoded({limit: '50mb', extended: true }))
-   .use('/ifcloud', apiRouter)
+   .use('/ifcloud', viewRouter)
    .use('/ifcloud', directRouter)
    .use('/ifcloud', operationRouter)
    .use('/ifcloud', express.static(path.join(process.cwd(), "html_src")));

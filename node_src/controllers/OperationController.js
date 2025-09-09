@@ -1,20 +1,16 @@
-const apiRequest = require("../ApiRequest");
-const runScript = require("../RunPythonScript");
+const apiRequest = require("../AuthApiRequest");
 const path = require('path');
 const { getComponentChange, processComponentChange, getDataFromComponent } = require("../operations/support/operationStarterSupport");
 const { validateFormOperationStarter } = require("../operations/validations/operationStarterValidation");
-const { log } = require("console");
 const { validateForm } = require("../operations/validations/validationForm");
 const { getComponentChangeForm, processComponentChangeForm, getDataFromComponentForm } = require("../operations/support/form");
 const fs = require('fs').promises;
-
-            require("dotenv").config();
+require("dotenv").config();
 
 class OperationController{
     async operationStarter(req, res){
         try{
             validateFormOperationStarter(req.body);
-
             const { resourceType, id, scriptName, returnOnlyFieldsComponents, components } = req.body;
             
             const { data } = await apiRequest.get(resourceType+'/'+id);

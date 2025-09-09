@@ -31,7 +31,7 @@
                     <li>importar <code>from helpers.file_utils import read_params_file, write_params_file</code></li>
                     <li>fazer a leitura do arquivo com os dados do ECG <code>params_file = sys.argv[1]</code></li>
                     <li>carregar a entrada de dados com <code>data = read_params_file(params_file)</code></li>
-                    <li>o resultado do processamento deve ser um array com uma string de resultados, conforme o exemplo: <code>['1 0 0 0 1 0 1', '1 0 1 0 1 1 1 1 0 0 1']</code></li>
+                    <li>o resultado do processamento deve ser um array com uma string de resultados, conforme o exemplo: <code>["953.0 951.0 949.0 948.0 950.0 950.0 951.0 948.0 946.0 944.0 947.0 947.0 947.0", "947.0 950.0 952.0 951.0 951.0 949.0 948.0 950.0 948.0"]</code></li>
                     <li>Ao final do script deve-se escrever os dados no arquivo que foi recebido na requisição desta forma: <code>write_params_file(params_file, results) </code></li>
                     <li>Após isso, basta utilizar o comando <code>print</code> para retornar o nome do arquivo desta maneira: <code>print(params_file)</code></li>
                 </ol> 
@@ -49,19 +49,27 @@
                 Preenchendo o formulário, IF-Cloud configura um JSON padrão criado especialmente para esta aplicação. Este JSON permite setar algumas informações importantes para o funcionamento da engine.
                 O JSON também pode ser enviado diretamente - sem interface gráfica - via requisição POST para a rota /run_script/operation
             </p>
-            <img id="img_json_form" src="/ifcloud/IMG/JSON_FORM.png" alt="">
-            <p><b>- resourceType:</b> do tipo "String", tipo de resource, pode ser Observation ou Patiente.</p>
-            <p><b>- Resource Id:</b> do tipo "String", id do resource salvo na API FHIR.</p>
-            <p><b>- scriptName:</b> do tipo "String", nome do script em Python desejado.</p>
-            <p><b>- Component Index:</b> do tipo "Int", índice do JSON FHIR na chave <code>component</code>
-            </p>
-            <p><b>- changeField:</b> do tipo "String", chave que deseja ser alterada dentro do objeto <code>valueSampledData</code> após o processamento dos dados</p>
-            <p><b>- returnOnlyFieldsComponent:</b> do tipo "Boolean", se deve ser retornado todos os campos
-                do resource alterado ou somente do componente.
-            </p>
-            <p><b>- Adicionar Componente:</b> Caso o script utilize mais de uma variação durante o seu processamento deve ser informadas as n derivações por meio deste botão.
+            <p>
+                { <br>
+                    &nbsp;&nbsp;resourceType: "Observation",<br> 
+                    &nbsp;&nbsp;id: ":id_from_CRUD_API",<br> 
+                    &nbsp;&nbsp;scriptName: ":script_name",<br>
+                    &nbsp;&nbsp;returnOnlyFieldsComponents: true, <br>
+                     &nbsp;&nbsp;components: [<br> 
+                        &nbsp;&nbsp;&nbsp;&nbsp;{ index: "0",<br> 
+                        &nbsp;&nbsp;&nbsp;&nbsp;changeField: "data" }<br> 
+                        
+                        &nbsp;&nbsp;]<br>
+                }
             </p>
 
+            <p><b>-resourceType:</b> tipo de Recurso FHIR que IF-Cloud deverá buscar na API de CRUD;</p>
+            <p><b>-id:</b> identificador do Recurso FHIR que a aplicação deverá buscar na API de CRUD;</p>
+            <b>-scriptName:</b> nome do script disponível no diretório Python SRC a ser executado.
+            <p><b>-returnOnlyFieldsComponents:</b> se IF-Cloud irá retornar somente os campos alterados ou todo o Recurso FHIR para o solicitante.</p>
+            <p><b>-components:</b> Configura quais as chaves do Recurso FHIR a serem buscadas e serem alteradas ou retornadas pelo script configurado em scriptName. Este pode ter n objetos de configuração, irá depender se o recurso FHIR contém as chaves e os índices.</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>-index:</b> índice da chave changeField a ser alterado no Recurso FHIR;</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>-changeField:</b> determina qual a chave do Recurso FHIR deverá ser alterada;</p>
         </div>
 
     </div>

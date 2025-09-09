@@ -18,7 +18,6 @@ module.exports = class RunPythonScript {
     }   
 
     runPythonScriptFromFile(scriptName, params) {
-
     }
 
     // runPythonScript(scriptName, params){
