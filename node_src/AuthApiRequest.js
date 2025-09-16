@@ -30,9 +30,10 @@ const authenticate = async () => {
 
 api.interceptors.request.use(async (config) => {
     console.log(cloudECG_URL)
-    if (!token) {
-        await authenticate();
-    }
+    // if (!token) {
+    //     await authenticate();
+    // }
+    await authenticate()
     config.headers["Authorization"] = `Bearer ${token}`;
     return config;
 })
