@@ -4,8 +4,11 @@ const { getComponentChange, processComponentChange, getDataFromComponent } = req
 const { validateFormOperationStarter } = require("../operations/validations/operationStarterValidation");
 const { validateForm } = require("../operations/validations/validationForm");
 const { getComponentChangeForm, processComponentChangeForm, getDataFromComponentForm } = require("../operations/support/form");
+const { default: FhirApi } = require("../providers/FhirApi");
 const fs = require('fs').promises;
 require("dotenv").config();
+
+
 
 class OperationController{
     async operationStarter(req, res){
@@ -13,13 +16,13 @@ class OperationController{
             validateFormOperationStarter(req.body);
             const { resourceType, id, scriptName, returnOnlyFieldsComponents, components } = req.body;
             
-            const { data } = await apiRequest.get(resourceType+'/'+id);
-
+            const data = await FhirApi.get(resourceType + "/" + id)
+            
             const fhirComponents = data.component;
             const arrFilteredComponents = [];
             const arrDataComponents = [];
             const arrComponentsChanges = [];
-            
+
             for(const component of components) {
                 const componentChange = getComponentChange(fhirComponents, component.index);
                 arrComponentsChanges.push(componentChange);
