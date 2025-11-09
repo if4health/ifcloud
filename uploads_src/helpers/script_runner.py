@@ -11,7 +11,6 @@ def run(process_function, prepare_signals=False, min_derivations=1):
     This function will execute python scripts with a "preset" around then
 
     process_function: function that will be executed
-    se True, converte cada item do data para np.array(float).
     prepare_signals: if True, every item in the data array will be transformad to np.array(float)
     min_derivations: minimal number of derivations required for the script
     """
