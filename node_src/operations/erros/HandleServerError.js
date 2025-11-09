@@ -1,10 +1,9 @@
-class HandleServerError extends Error {
-    constructor() {
-        super();
-        this.status = "error";
-        this.statusCode = 500;
-        this.errors = { message: "Internal server error" };
-    }
+const AppError = require("./AppError");
+
+class HandleServerError extends AppError {
+  constructor(message = "Internal server error", statusCode = 500) {
+    super(message, statusCode, "error");
+  }
 }
 
 module.exports = HandleServerError;

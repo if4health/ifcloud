@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const  HandleArrayError = require("../erros/HandleArrayError");
+const ValidationError = require("../erros/ValidationError");
 
 const schema = Joi.object({
     scriptName: Joi.string().required().messages({
@@ -20,7 +20,7 @@ module.exports.validateFormRunScriptWithParams = (data) => {
         const messages = error.details.map((err) => {
             return { message: err.message }
         });
-
-        throw new HandleArrayError(messages);
+        ValidationError
+        throw new ValidationError(messages);
     }
 };

@@ -1,17 +1,7 @@
-import sys
-import numpy as np
-from helpers.file_utils import read_params_file, write_params_file
+from helpers.script_runner import run
 
-params_file = sys.argv[1]
-data = read_params_file(params_file)
-results = []
-message = "Hello World!"
-if data:
-    signals = [np.array([float(i) for i in signal.split()]) for signal in data]
-    for signal in signals:
-        results.append(message)
-else:
-    results.append(message)
+def processHelloWorld(data):
+    return ["Hello World!" for _ in (data or [1])]
 
-write_params_file(params_file, results) 
-print(params_file)
+if __name__ == "__main__":
+    run(process_function=processHelloWorld, prepare_signals=False, min_derivations=1)

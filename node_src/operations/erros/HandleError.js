@@ -1,9 +1,8 @@
-class HandleError extends Error {
+const AppError = require("./AppError");
+
+class HandleError extends AppError {
     constructor(message, statusCode = 400) {
-        super();
-        this.status = "error";
-        this.statusCode = statusCode;
-        this.errors = { message: message };
+        super(message, statusCode, "error");
     }
 }
 

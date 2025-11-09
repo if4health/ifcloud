@@ -28,8 +28,10 @@ import time
 import sys
 from helpers.file_utils import read_params_file, write_params_file
 import os
+from helpers.script_runner import run
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suprime logs do TensorFlow
+
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suprime logs do TensorFlow
 
 #Functions
 
@@ -134,68 +136,6 @@ def tpSig_predc(predc):
     else: print("ERRO")
   return carac_predic
 
-tempototal1 = time.time()
-#Importando dados sinal MIT para DF
-tempoimport1 = time.time()
-params_file = sys.argv[1]
-data = read_params_file(params_file)
-mlii = list(map(float, data[0].split()))
-v5 = list(map(float, data[1].split()))
-pos = np.arange(len(mlii))
-
-#Importando dados annotations MIT para DF
-r_peak = []
-tp_sig = []
-
-annotations_txt = open("uploads_src/200annotations.txt", "r")
-for index in annotations_txt:
-  r_peak.append(index[15:21])
-  tp_sig.append(index[26])
-annotations_txt.close()
-
-del r_peak[0]
-del r_peak[1]
-del tp_sig[0]
-del tp_sig[1]
-
-for index in range(len(r_peak)):
-  r_peak[index] = int(r_peak[index])
-
-tempoimport2 = time.time()
-tempoimport = tempoimport2 - tempoimport1
-
-mlii_filter = band_filter(mlii)
-
-
-##Adequando posições dos picos R
-for index in range(len(r_peak)):
-  if(r_peak[index]+20 < len(mlii_filter)):
-    r_peak[index] = r_peak[index]+20
-  else:
-    r_peak.pop(index)
-
-pnts_ant = 130
-pnts_post = 130
-
-bat_mlii = []
-loc_r_peak = []
-for index in range(len(r_peak)):
-  sig_aux_mlii = []
-
-  if((r_peak[index]-1-pnts_ant >= 0) and (r_peak[index]+pnts_post < len(mlii_filter))):
-    sig_aux_mlii = mlii_filter[(r_peak[index]-1-pnts_ant):(r_peak[index]+pnts_post)]
-
-    bat_mlii.append(sig_aux_mlii)
-    loc_r_peak.append(r_peak[index])
-
-#Transformando em dataset
-df_mlii = pd.DataFrame(bat_mlii)
-
-#Consolidar dataset
-#Convertendo Dataset para matriz de vetores numpy
-base_MLII = adeq_dts(df_mlii)
-base_MLII = np.asarray(base_MLII)
-
 #Predição e manipulação do resultado final
 #Criando novo modelo
 def criar_modelo():
@@ -218,19 +158,96 @@ def criar_modelo():
     modelo.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
     return modelo
 
-model = criar_modelo()
+def proccessCnn(data):
+  tempototal1 = time.time()
+  # #Importando dados sinal MIT para DF
+  tempoimport1 = time.time()
+  # params_file = sys.argv[1]
+  # data = read_params_file(params_file)
+  # mlii = list(map(float, data[0].split()))
+  # v5 = list(map(float, data[1].split()))
+  
+  print(f"DATA[0]: {data[0]}")
+  print(f"DATA[1]: {data[1]}")
+  
+  mlii = data[0]
+  v5 =  data[1]
+  
+  pos = np.arange(len(mlii))
 
-model.load_weights("uploads_src/modelo_CNN.h5")
-#Aplicar a classificação da batida através do modelo carregado
-predic = model.predict([base_MLII])
+  #Importando dados annotations MIT para DF
+  r_peak = []
+  tp_sig = []
 
-#Transformar a predição em um vetor de saída
-#Identificando batida através de predição
-vetor_final_predic = tpSig_predc(predic)
-print(vetor_final_predic)
-write_params_file(params_file, vetor_final_predic) 
-print(params_file)
+  annotations_txt = open("uploads_src/200annotations.txt", "r")
+  for index in annotations_txt:
+    r_peak.append(index[15:21])
+    tp_sig.append(index[26])
+  annotations_txt.close()
 
-sys.stdout.flush()
-sys.stderr.flush()
-# print(vetor_final_predic)
+  del r_peak[0]
+  del r_peak[1]
+  del tp_sig[0]
+  del tp_sig[1]
+
+  for index in range(len(r_peak)):
+    r_peak[index] = int(r_peak[index])
+
+  tempoimport2 = time.time()
+  tempoimport = tempoimport2 - tempoimport1
+
+  mlii_filter = band_filter(mlii)
+
+
+  ##Adequando posições dos picos R
+  for index in range(len(r_peak)):
+    if(r_peak[index]+20 < len(mlii_filter)):
+      r_peak[index] = r_peak[index]+20
+    else:
+      r_peak.pop(index)
+
+  pnts_ant = 130
+  pnts_post = 130
+
+  bat_mlii = []
+  loc_r_peak = []
+  for index in range(len(r_peak)):
+    sig_aux_mlii = []
+
+    if((r_peak[index]-1-pnts_ant >= 0) and (r_peak[index]+pnts_post < len(mlii_filter))):
+      sig_aux_mlii = mlii_filter[(r_peak[index]-1-pnts_ant):(r_peak[index]+pnts_post)]
+
+      bat_mlii.append(sig_aux_mlii)
+      loc_r_peak.append(r_peak[index])
+
+  #Transformando em dataset
+  df_mlii = pd.DataFrame(bat_mlii)
+
+  #Consolidar dataset
+  #Convertendo Dataset para matriz de vetores numpy
+  base_MLII = adeq_dts(df_mlii)
+  base_MLII = np.asarray(base_MLII)
+
+  model = criar_modelo()
+
+  model.load_weights("uploads_src/modelo_CNN.h5")
+  #Aplicar a classificação da batida através do modelo carregado
+  predic = model.predict([base_MLII])
+
+  #Transformar a predição em um vetor de saída
+  #Identificando batida através de predição
+  vetor_final_predic = tpSig_predc(predic)
+  return [vetor_final_predic]
+  # vetTeste = []
+  # vetTeste.append(vetor_final_predic)
+  # print(vetTeste)
+  # write_params_file(params_file, vetTeste) 
+  # print(params_file)
+
+  # sys.stdout.flush()
+  # sys.stderr.flush()
+  # print(vetor_final_predic)
+  
+  
+if __name__ == "__main__":
+  run(process_function=proccessCnn, prepare_signals=True, min_derivations=2)

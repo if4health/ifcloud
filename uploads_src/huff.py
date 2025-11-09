@@ -3,6 +3,8 @@ import heapq
 import json
 from collections import defaultdict
 from helpers.file_utils import read_params_file, write_params_file
+from helpers.script_runner import run
+
 
 codes = {}
 freq = defaultdict(int)
@@ -55,19 +57,13 @@ def process_string(input_string):
     encoded_string = " ".join(codes[char] for char in input_string)
     return encoded_string
 
-def main():
-    params_file = sys.argv[1]
-    data = read_params_file(params_file)
-
+def proccessHuff(data):
     results = []
     for string in data:
         encoded_result = process_string(string)
         results.append([encoded_result])
 
-    json_results = json.dumps(results, indent=4)
-    write_params_file(params_file, json_results)
-    
-    print(params_file)
+    return results
 
 if __name__ == "__main__":
-    main()
+    run(process_function=proccessHuff, prepare_signals=True, min_derivations=1)

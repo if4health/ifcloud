@@ -10,7 +10,7 @@ class FhirApi {
     this.clientSecret = process.env.CLIENT_SECRET;
 
     this.token = null;
-    this.tokenExpiresAt = 0; // timestamp da expiração
+    this.tokenExpiresAt = 0;
 
     this.client = axios.create({
       baseURL: this.baseURL
@@ -19,9 +19,6 @@ class FhirApi {
     this._setupInterceptor();
   }
 
-  /**
-   * Solicita um novo token ao servidor
-   */
   async _authenticate() {
     const response = await axios.post(`${this.baseURL}/auth/token`, {
       grant_type: this.grantType,
@@ -31,27 +28,19 @@ class FhirApi {
 
     this.token = response.data.access_token;
 
-    // expires_in vem em segundos → converter para timestamp
     const expiresIn = response.data.expires_in;
     this.tokenExpiresAt = Date.now() + expiresIn * 1000;
 
     this.client.defaults.headers.Authorization = `Bearer ${this.token}`;
   }
 
-  /**
-   * Verifica se o token está expirado
-   */
   _tokenExpired() {
     return !this.token || Date.now() >= this.tokenExpiresAt;
   }
 
-  /**
-   * Interceptor → insere token automaticamente
-   */
   _setupInterceptor() {
     this.client.interceptors.request.use(async (config) => {
 
-      // Se o token não existe ou expirou → renova
       if (this._tokenExpired()) {
         await this._authenticate();
       }
@@ -61,9 +50,6 @@ class FhirApi {
     });
   }
 
-  /**
-   * Métodos públicos
-   */
   async get(resource) {
     const response = await this.client.get(resource);
     return response.data;

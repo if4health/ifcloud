@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const  HandleArrayError = require("../erros/HandleArrayError");
+const  ValidationError = require("../erros/ValidationError");
 
 const schema = Joi.object({
     resourceType: Joi.string().required().messages({
@@ -47,6 +47,6 @@ module.exports.validateForm = (data) => {
     if (error) {
         const errorText = error.details.map(detail => `- ${detail.message}`).join('<br>');
 
-        throw new Error(errorText);
+        throw new ValidationError(errorText);
     }
 };
