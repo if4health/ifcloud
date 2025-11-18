@@ -1,3 +1,4 @@
+const { response } = require("express");
 const FhirResourceError = require("../operations/erros/FhirResourceError");
 const { default: FhirApi } = require("../providers/FhirApi");
 const PythonRunner = require("../providers/PythonRunner");
@@ -48,10 +49,63 @@ class OperationService {
     };
   }
 
+ async startFormOperation(body) {
+  const {
+    resourceType,
+    id,
+    scriptName,
+    onlyComponent,
+    components,
+  } = body;
+
+  const resource = await FhirApi.get(resourceType + "/" + id);
+  const fhirComponents = resource.component;
+  if (!fhirComponents) {
+    throw new FhirResourceError("Resource does not contain components");
+  }
+
+  const {
+    arrResourceComponentsToChange,
+    arrDataFromResourceComponents
+  } = this._mapComponentsToData(fhirComponents, components);
+
+  const processedData = await PythonRunner.run(
+    scriptName,
+    arrDataFromResourceComponents
+  );
+
+    // Caso contrário, segue o fluxo normal
+  const updatedComponents = this._applyProcessedValues(
+    arrResourceComponentsToChange,
+    components,
+    processedData
+  );
+
+  if (onlyComponent === "true") {
+    const mappedComponents = components.map((comp, i) => ({
+      index: comp.index,
+      changeField: comp.changeField,
+      original: arrResourceComponentsToChange[i],
+      processed: updatedComponents[i]
+    }));
+
+    return {
+      resourceType,
+      id,
+      scriptName,
+      components: mappedComponents
+    };
+  }
+
+  return {
+    ...resource,
+    component: updatedComponents,
+  };
+}
   // Returns the component in the informed index
   _getComponentToChangeByIndex(resourceComponents, index) {
     if (resourceComponents[index]) {
-      return resourceComponents[index]["valueSampledData"];
+      return resourceComponents[index];
     }
     throw new FhirResourceError(
       `Component index ${index} does not exist in FHIR resource`
@@ -63,8 +117,8 @@ class OperationService {
     resourceComponent,
     requestComponent
   ) {
-    if (resourceComponent[requestComponent.changeField]) {
-      return resourceComponent[requestComponent.changeField];
+    if (resourceComponent["valueSampledData"][requestComponent.changeField]) {
+      return resourceComponent["valueSampledData"][requestComponent.changeField];
     }
     throw new FhirResourceError(
       `Field '${requestComponent.changeField}' does not exist in component`
@@ -107,8 +161,8 @@ class OperationService {
     const resultComponents = [];
 
     for (let i = 0; i < processedData.length; i++) {
-      const componentOriginal = componentsToChange[0]; // Use 0 with reference
-      const requestComponent = requestComponents[0]; // Use 0 with reference
+      const componentOriginal = componentsToChange[i];
+      const requestComponent = requestComponents[i];
 
       const clonedComponent = JSON.parse(JSON.stringify(componentOriginal));
       const field = requestComponent.changeField;
@@ -118,7 +172,7 @@ class OperationService {
         ? rawValue.join(" ")
         : rawValue;
 
-      clonedComponent[field] = normalizedValue
+      clonedComponent["valueSampledData"][field] = normalizedValue
         ?.toString()
         .replace(/(\r\n|\n|\r)/gm, "");
 

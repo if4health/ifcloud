@@ -30,7 +30,6 @@ from helpers.file_utils import read_params_file, write_params_file
 import os
 from helpers.script_runner import run
 
-
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suprime logs do TensorFlow
 
 #Functions

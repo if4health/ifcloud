@@ -10,7 +10,6 @@
 </head>
 <body>
     <%- include('./partials/header.ejs') %>
-    
 
     <div id="content">
         <div id="card">
@@ -33,7 +32,6 @@
                                     &nbsp;&nbsp;&nbsp;&nbsp;{<br>
                                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;index: '<%- component.index %>',<br>
                                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changeField: '<%- component.changeField %>',<br>
-                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;returnOnlyFieldsComponent: <%- response.returnOnlyFieldsComponent %><br>
                                     &nbsp;&nbsp;&nbsp;&nbsp;}<% if (index < response.components.length - 1) { %>,<br><% } %>
                                 <% }) %>
                             <br>
@@ -46,7 +44,7 @@
                 <div id="json" class="line">
                     <% response.components.forEach((component, index) => { %>
                         <p>
-                        Campo Original: <%- component.originalComponent %><br>
+                        Campo Original: <%- component.original.valueSampledData[component.changeField] %><br>
                         Campo a ser Alterado: <%- component.changeField %><br>
                         </p>
                     <% }) %>
@@ -62,20 +60,12 @@
             </div>
 
             <%
-            if(typeof data !== 'undefined') {
-                console.log(data.valueSampledData);
+            if(typeof response !== 'undefined') {
+                console.log(response.original);
             %>
             <div id="json" class="line">
-                <% data.forEach((element, index) => { %>
-                    <p class="line">
-                        Period: <%- element.period %><br>
-                        Factor: <%- element.factor %><br>
-                        LowerLimit: <%- element.lowerLimit %><br>
-                        UpperLimit: <%- element.upperLimit %><br>
-                        Dimensions: <%- element.dimensions %><br>
-                        Data: <%- element.data %><br>
-                    </p>
-                <% }) %>
+                <% console.log("RESPONSE: " + JSON.stringify(response.components.processed)) %>
+               
             </div>
             <%
             }

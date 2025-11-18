@@ -33,7 +33,7 @@ def run(process_function, prepare_signals=False, min_derivations=1):
     # Check if results is a array
     if not isinstance(results, list):
         results = [results]
-
+        
     write_params_file(params_file, results)
 
     print(params_file)

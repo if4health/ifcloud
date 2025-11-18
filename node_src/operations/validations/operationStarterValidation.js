@@ -37,7 +37,7 @@ const schema = Joi.object({
     })
 });
 
-module.exports.validateFormOperationStarter = (data) => {
+module.exports.operationStarterValidation = (data) => {
     const { error } = schema.validate(data, { abortEarly: false });
     
     if (error) {

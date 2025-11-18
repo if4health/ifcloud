@@ -1,10 +1,9 @@
 <div id="content">
     <div id="card">
-        <form id="json_form" action="/ifcloud/myForm" method="post">
+        <form id="json_form">
             <div class="line">
-                <h2>Formulario Json</h2>
+                <h2>Formulário Json</h2>
             </div>
-
             <div class="line">
                 <label>Resource Type</label>
                 <select id="resource_type" name="resourceType">
@@ -12,85 +11,204 @@
                     <option value="Patient">Patient</option>
                 </select>
             </div>
-            
             <div class="line">
                 <label>Resource Id</label>
-                <input id="resource_id" type="text" name="resourceId" />
+                <input id="id" type="text" name="id" />
             </div>
-
             <div class="line">
                 <label>Script Name</label>
-                <input id="script_name" type="text" name="scriptName" >
+                <input id="script_name" type="text" name="scriptName">
             </div>
-
+            
             <!-- Primeira instância de componentData -->
             <div class="line componentData">
                 <label>Component Index</label>
                 <input id="component_index" type="text" name="componentIndex[]">
-
                 <label>Change Field</label>
                 <input id="change_field" type="text" name="changeField[]">
             </div>
-
+            
             <div class="line">
                 <label>Return Only Fields Component</label>
-                <select id="only_component" name="onlyComponent">
-                    <option value="0">false</option>
-                    <option value="1">true</option>
+                <select id="returnOnlyFieldsComponents" name="returnOnlyFieldsComponents">
+                    <option value="false">false</option>
+                    <option value="true">true</option>
                 </select>
             </div>
-
+            
             <div id="actions" class="line">
                 <button type="button" id="addComponent" class="btn">Adicionar Componente</button>
             </div>
-
+            
             <div id="send" class="line">
-                <input type="submit" id="btn_send">
+                <input type="submit" id="btn_send" value="Enviar">
             </div>
         </form>
     </div>
 </div>
 
+<!-- Loading -->
+<div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center;">
+    <div class="spinner-border text-light" role="status" style="width: 4rem; height: 4rem;">
+        <span class="visually-hidden">Carregando...</span>
+    </div>
+</div>
+
+<!-- Response Modal -->
+<div class="modal fade" id="responseModal" tabindex="-1" aria-labelledby="responseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" style="max-width: 75vw;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="responseModalLabel">Resposta da Requisição</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div id="responseContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    const addComponentButton = document.getElementById('addComponent');
-    const form = document.getElementById('json_form');
-    const returnOnlyFields = document.querySelector('.line select#only_component');
+const addComponentButton = document.getElementById('addComponent');
+const form = document.getElementById('json_form');
+const returnOnlyFieldsComponents = document.querySelector('.line select#returnOnlyFieldsComponents');
+const loadingOverlay = document.getElementById('loadingOverlay');
 
-    addComponentButton.addEventListener('click', () => {
-        const newComponentData = document.createElement('div');
-        newComponentData.classList.add('line', 'componentData');
+// Adding new Components
+addComponentButton.addEventListener('click', () => {
+    const newComponentData = document.createElement('div');
+    newComponentData.classList.add('line', 'componentData');
+    newComponentData.innerHTML = `
+        <label>Component Index</label>
+        <input type="text" name="componentIndex[]">
+        <label>Change Field</label>
+        <input type="text" name="changeField[]">
+        <button type="button" class="removeComponent btn">Remover</button>
+    `;
+    form.insertBefore(newComponentData, returnOnlyFieldsComponents.parentElement);
+    
+    const removeButton = newComponentData.querySelector('.removeComponent');
+    removeButton.addEventListener('click', () => {
+        const allComponents = document.querySelectorAll('.componentData');
+        if (allComponents.length > 1) {
+            newComponentData.remove();
+        } else {
+            alert('O formulário deve conter pelo menos um componente.');
+        }
+    });
+});
 
-        newComponentData.innerHTML = `
-            <label>Component Index</label>
-            <input type="text" name="componentIndex[]">
+// Remove existing components
+document.querySelectorAll('.componentData .removeComponent').forEach(button => {
+    button.addEventListener('click', function () {
+        const componentDataElements = document.querySelectorAll('.componentData');
+        if (componentDataElements.length > 1) {
+            this.parentElement.remove();
+        } else {
+            alert('O formulário deve conter pelo menos um componente.');
+        }
+    });
+});
 
-            <label>Change Field</label>
-            <input type="text" name="changeField[]">
-
-            <button type="button" class="removeComponent btn">Remover</button>
+// Send form
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(form);
+    
+    const componentIndexes = formData.getAll('componentIndex[]');
+    const changeFields = formData.getAll('changeField[]');
+    
+    const components = [];
+    for (let i = 0; i < componentIndexes.length; i++) {
+        if (componentIndexes[i] || changeFields[i]) {
+            components.push({
+                index: componentIndexes[i],
+                changeField: changeFields[i]
+            });
+        }
+    }
+    
+    const data = {
+        resourceType: formData.get('resourceType'),
+        id: formData.get('id'),
+        scriptName: formData.get('scriptName'),
+        returnOnlyFieldsComponents: formData.get('returnOnlyFieldsComponents') === 'true',
+        components: components
+    }
+    
+    // Show loading
+    loadingOverlay.style.display = 'flex';
+    
+     try {
+        const response = await fetch('/ifcloud/run_script/operation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        // Hide loading
+        loadingOverlay.style.display = 'none';
+        
+        const responseContent = document.getElementById('responseContent');
+        const modalTitle = document.getElementById('responseModalLabel');
+        
+        if (result.status === 'error' || !response.ok) {
+            modalTitle.textContent = 'Erro na Requisição';
+            modalTitle.className = 'modal-title text-danger';
+            
+            responseContent.innerHTML = `
+                <div class="alert alert-danger" role="alert">
+                    <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill"></i> ${result.error || 'Erro'}</h5>
+                    <hr>
+                    <p class="mb-0"><strong>Mensagem:</strong> ${result.message || 'Ocorreu um erro inesperado'}</p>
+                    ${result.details ? `<p class="mb-0 mt-2"><strong>Detalhes:</strong> ${result.details}</p>` : ''}
+                </div>
+                <details>
+                    <summary style="cursor: pointer; color: #0d6efd;">Ver resposta completa (JSON)</summary>
+                    <pre style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px;">${JSON.stringify(result, null, 2)}</pre>
+                </details>
+            `;
+        } else {
+            modalTitle.textContent = 'Resposta da Requisição';
+            modalTitle.className = 'modal-title text-success';
+            
+            responseContent.innerHTML = `
+                <pre style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; max-height: 60vh; max-width: 100%; overflow-x: auto; overflow-y: auto; word-wrap: break-word; white-space: pre-wrap;">${JSON.stringify(result, null, 2)}</pre>
+            `;
+        }
+        
+        const modal = new bootstrap.Modal(document.getElementById('responseModal'));
+        modal.show();
+        
+    } catch (error) {
+        loadingOverlay.style.display = 'none';
+        
+        const responseContent = document.getElementById('responseContent');
+        const modalTitle = document.getElementById('responseModalLabel');
+        
+        modalTitle.textContent = 'Erro de Conexão';
+        modalTitle.className = 'modal-title text-danger';
+        
+        responseContent.innerHTML = `
+            <div class="alert alert-danger" role="alert">
+                <h5 class="alert-heading"><i class="bi bi-x-circle-fill"></i> Erro de Conexão</h5>
+                <hr>
+                <p class="mb-0"><strong>Mensagem:</strong> Não foi possível conectar ao servidor</p>
+                <p class="mb-0 mt-2"><strong>Detalhes:</strong> ${error.message}</p>
+            </div>
         `;
-
-        form.insertBefore(newComponentData, returnOnlyFields.parentElement);
-
-        const removeButton = newComponentData.querySelector('.removeComponent');
-        removeButton.addEventListener('click', () => {
-            const allComponents = document.querySelectorAll('.componentData');
-            if (allComponents.length > 1) {
-                newComponentData.remove();
-            } else {
-                alert('O formulário deve conter pelo menos um componente.');
-            }
-        });
-    });
-
-    document.querySelectorAll('.componentData .removeComponent').forEach(button => {
-        button.addEventListener('click', function () {
-            const componentDataElements = document.querySelectorAll('.componentData');
-            if (componentDataElements.length > 1) {
-                this.parentElement.remove();
-            } else {
-                alert('O formulário deve conter pelo menos um componente.');
-            }
-        });
-    });
+        
+        const modal = new bootstrap.Modal(document.getElementById('responseModal'));
+        modal.show();
+    }
+});
 </script>
