@@ -6,6 +6,16 @@ from helpers.file_utils import read_params_file, write_params_file
 
 os.environ.setdefault('TF_CPP_MIN_LOG_LEVEL', '3')
 
+import os 
+from datetime import datetime
+LOG_PATH = "./python_logs.txt"  # caminho do seu arquivo de log
+
+def log(msg):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(LOG_PATH, "a") as f:
+        f.write(f"[{timestamp}] {msg}\n")
+
+
 def run(process_function, prepare_signals=False, min_derivations=1):
     """
     This function will execute python scripts with a "preset" around then
@@ -29,7 +39,7 @@ def run(process_function, prepare_signals=False, min_derivations=1):
             raise Exception("Error to convert data to numpy arrays")
 
     results = process_function(data)
-
+    
     # Check if results is a array
     if not isinstance(results, list):
         results = [results]
