@@ -30,8 +30,6 @@ from helpers.file_utils import read_params_file, write_params_file
 import os
 from helpers.script_runner import run
 
-# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suprime logs do TensorFlow
-
 #Functions
 
 #Filtro Bandpass
@@ -161,13 +159,6 @@ def proccessCnn(data):
   tempototal1 = time.time()
   # #Importando dados sinal MIT para DF
   tempoimport1 = time.time()
-  # params_file = sys.argv[1]
-  # data = read_params_file(params_file)
-  # mlii = list(map(float, data[0].split()))
-  # v5 = list(map(float, data[1].split()))
-  
-  print(f"DATA[0]: {data[0]}")
-  print(f"DATA[1]: {data[1]}")
   
   mlii = data[0]
   v5 =  data[1]
@@ -237,16 +228,6 @@ def proccessCnn(data):
   #Identificando batida através de predição
   vetor_final_predic = tpSig_predc(predic)
   return [vetor_final_predic]
-  # vetTeste = []
-  # vetTeste.append(vetor_final_predic)
-  # print(vetTeste)
-  # write_params_file(params_file, vetTeste) 
-  # print(params_file)
-
-  # sys.stdout.flush()
-  # sys.stderr.flush()
-  # print(vetor_final_predic)
-  
   
 if __name__ == "__main__":
   run(process_function=proccessCnn, prepare_signals=True, min_derivations=2)

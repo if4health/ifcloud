@@ -99,16 +99,6 @@ def tpSig_predc(predc):
 
 # INÍCIO DO SCRIPT (idêntico à CNN)
 
-import os 
-from datetime import datetime
-LOG_PATH = "./python_logs.txt"  # caminho do seu arquivo de log
-
-def log(msg):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open(LOG_PATH, "a") as f:
-        f.write(f"[{timestamp}] {msg}\n")
-
-
 def rna_pso(data):
     tempototal1 = time.time()
 
@@ -169,8 +159,6 @@ def rna_pso(data):
     base_MLII = adeq_dts(df_mlii)
     base_MLII = np.asarray(base_MLII)
     
-    log(base_MLII)
-
     print("\nCarregando modelo MLP otimizado por PSO...")
 
     modelo = load_model("uploads_src/modelo_RNA_PSO.h5")

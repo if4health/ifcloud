@@ -5,6 +5,7 @@ const bp = require('body-parser');
 const viewRouter = require('./routers/ViewRouter');
 const directRouter = require('./routers/DirectRouter');
 const operationRouter = require('./routers/OperationRouter');
+const apiInfoRouter = require("./routers/ApiInfoRouter");
 require("dotenv").config();
 
 const PORT = process.env.PORT || 8000;
@@ -24,6 +25,7 @@ app.use(bp.json({limit: '50mb', extended: true}))
    .use('/ifcloud', viewRouter)
    .use('/ifcloud', directRouter)
    .use('/ifcloud', operationRouter)
+   .use('/ifcloud', apiInfoRouter)
    .use('/ifcloud', express.static(path.join(process.cwd(), "html_src")));
 
 app.listen(PORT, () => {

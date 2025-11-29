@@ -17,21 +17,23 @@ class OperationController {
 
       return res.json(result);
     } catch (error) {
+      // Inside api errors
       if (error instanceof AppError) {
         return res.status(error.statusCode).json(error.toJSON());
       }
 
+      // Code errors
       if (error?.response?.data) {
         return res.status(400).json({
           status: "error",
           error: "ExternalAPIError",
-          message:
-            error.response.data.error ||
+          message: error.response.data.error ||
             error.response.data ||
             "External API returned an error",
         });
       }
 
+      // Another possible errors
       console.log("External error:", error);
       const serverError = new HandleServerError(
         "An unexpected error occurred",
