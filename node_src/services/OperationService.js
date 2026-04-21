@@ -2,6 +2,7 @@ const { response } = require("express");
 const FhirResourceError = require("../operations/erros/FhirResourceError");
 const { default: FhirApi } = require("../providers/FhirApi");
 const PythonRunner = require("../providers/PythonRunner");
+const { buildFhirUrl } = require("../helpers/fhir/requestStrategies");
 
 class OperationService {
   async startOperation(body) {
@@ -13,8 +14,10 @@ class OperationService {
       components,
     } = body;
 
-    const resource = await FhirApi.get(resourceType + "/" + id);
+    const fhirPath = buildFhirUrl("byId", { id, resourceType });
+    const resource = await FhirApi.get(fhirPath);
     const fhirComponents = resource.component;
+
     if (!fhirComponents) {
       throw new FhirResourceError("Resource does not contain components");
     }
