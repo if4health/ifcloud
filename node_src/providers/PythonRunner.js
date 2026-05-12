@@ -55,6 +55,12 @@ class PythonRunner {
 
       const { stdout, stderr, status } = processResult;
 
+      if (stderr) {
+        stderr.trim().split("\n")
+          .filter((line) => line.startsWith("[DEBUG]"))
+          .forEach((line) => console.log(line));
+      }
+
       // Verify if the scripts returns a ERROR
       if (status !== 0) {
         const cleanError = (stderr || stdout || "Unknown Python error")

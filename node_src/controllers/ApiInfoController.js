@@ -75,7 +75,7 @@ class ApiInfoController {
                 description: "Huff algorithm"
             },
             {
-                name: "rna_pso.py",
+                name: "python.py",
                 description: "Analyzes the heartbeat and detects possible points of arrhythmia"
             }
         ]

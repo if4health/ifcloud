@@ -59,11 +59,11 @@ def process_string(input_string):
 
 def proccessHuff(data):
     results = []
-    for string in data:
-        encoded_result = process_string(string)
+    for signal in data:
+        encoded_result = process_string(signal['signal'])
         results.append([encoded_result])
 
     return results
 
 if __name__ == "__main__":
-    run(process_function=proccessHuff, prepare_signals=True, min_derivations=1)
+    run(process_function=proccessHuff, prepare_signals=True, min_derivations=1, max_derivations=4)

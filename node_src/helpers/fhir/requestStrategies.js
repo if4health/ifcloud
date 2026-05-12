@@ -1,4 +1,3 @@
-
 // Returns the fhir api url
 const requestStrategies = {
     // fhirapi.domain/Observation/3984308adawd
@@ -23,17 +22,12 @@ const requestStrategies = {
  *  - 'byIdAndMinuteInterval'
  *
  * @param {Object} params - URL parameters
- * @param {string} params.resourceType - Resource type (Patient, Observation)
- * @param {string} params.id - Resource ID
- * @param {string} [params.minute] - Specific minute
- * @param {string} [params.initialMinute] - Initial minute
- * @param {string} [params.finalMinute] - Final minute
  *
  * @returns {string} Formatted URL
  *
  * @example
  * buildFhirUrl('byId', { resourceType: 'Observation', id: '123' })
- * // "Patient/123"
+ * // "Observation/123"
  *
  * @example
  * buildFhirUrl('byIdAndMinute', {
@@ -42,15 +36,6 @@ const requestStrategies = {
  *   minute: '10'
  * })
  * // "Observation/123/data/10"
- *
- * @example
- * buildFhirUrl('byIdAndMinuteInterval', {
- *   resourceType: 'Observation',
- *   id: '123',
- *   initialMinute: '10',
- *   finalMinute: '20'
- * })
- * // "Observation/123/data/10/20"
  *
  */
 export function buildFhirUrl(typeRequest, params) {

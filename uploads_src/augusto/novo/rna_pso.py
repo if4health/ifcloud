@@ -103,7 +103,7 @@ def rna_pso(data):
     tempototal1 = time.time()
 
     tempoimport1 = time.time()
-    mlii = data[0]
+    mlii = data[0]['signal']
     
     # # Import annotations
     r_peak = []
@@ -120,7 +120,7 @@ def rna_pso(data):
     # del tp_sig[0]
     # del tp_sig[1]
     
-    r_peak = proccessCalcBPM([mlii])[0]
+    r_peak = proccessCalcBPM([{'signal': mlii}])[0]
 
     # Teste de precisa disso depois!
     for index in range(len(r_peak)):

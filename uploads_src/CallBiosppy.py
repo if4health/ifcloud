@@ -15,11 +15,11 @@ class NDArrayEncoder(json.JSONEncoder):
 def proccessCallBiosppy(data):
     results = []
     for signal in data:
-        out = ecg.ecg(signal=signal, sampling_rate=360, show=False)
+        out = ecg.ecg(signal=signal['signal'], sampling_rate=360, show=False)
         # heart_rate = out["heart_rate"].tolist()
 
         results.append(list(out[0]))
     return results    
 
 if __name__ == "__main__":
-    run(process_function=proccessCallBiosppy, prepare_signals=True, min_derivations=1)
+    run(process_function=proccessCallBiosppy, prepare_signals=True, min_derivations=1, max_derivations=4)

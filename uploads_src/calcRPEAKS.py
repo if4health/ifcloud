@@ -12,11 +12,11 @@ class NDArrayEncoder(json.JSONEncoder):
 def proccessCalcRPEAKS(data):
     results = []
     for signal in data:
-        out = ecg.ecg(signal=signal, sampling_rate=360, show=False)
+        out = ecg.ecg(signal=signal['signal'], sampling_rate=360, show=False)
         heart_rate = out["rpeaks"].tolist()
 
         results.append(heart_rate)
     return results
 
 if __name__ == '__main__':
-    run(proccessCalcRPEAKS, prepare_signals=True, min_derivations=1)
+    run(proccessCalcRPEAKS, prepare_signals=True, min_derivations=1, max_derivations=4)

@@ -8,7 +8,9 @@ import tensorflow as tf
 import sys
 from biosppy.signals import ecg
 from helpers.file_utils import read_params_file, write_params_file
+from helpers.script_runner import run
 import json
+from calcRPEAKS import proccessCalcRPEAKS
 
 
 #Functions
@@ -19,15 +21,15 @@ class NDArrayEncoder(json.JSONEncoder):
     return json.JSONEncoder.default(self, obj)
 
 #Functions
-def calcRPEAKS(signal):
-  # process it and plot
-  out = ecg.ecg(signal=signal, sampling_rate=360, show=False)
+# def calcRPEAKS(signal):
+#   # process it and plot
+#   out = ecg.ecg(signal=signal, sampling_rate=360, show=False)
   
-  json_str = json.dumps({"filtered" : out['filtered'], 'rpeaks': out["rpeaks"],'bpm' :out["heart_rate"], "rate": 360}, cls=NDArrayEncoder, indent=4)
+#   json_str = json.dumps({"filtered" : out['filtered'], 'rpeaks': out["rpeaks"],'bpm' :out["heart_rate"], "rate": 360}, cls=NDArrayEncoder, indent=4)
 
-  data = out["rpeaks"]
-  arr_data = np.array([str(item) for item in data])
-  return arr_data
+#   data = out["rpeaks"]
+#   arr_data = np.array([str(item) for item in data])
+#   return arr_data
 
 def band_filter(signal):
     # Band pass Filter
@@ -213,15 +215,14 @@ def tpSig_predc(predc):
     # else: print("ERRO")
   return carac_predic
 
-
-if __name__ == "__main__":
+def inicio(data):
   tf.config.set_visible_devices([], 'GPU')  # Desativa todos os dispositivos GPU
   params_file = sys.argv[1]
   data = read_params_file(params_file)
   
   mlii = list(map(float, data[0]['signal'].split()))
   v5 = list(map(float, data[1]['signal'].split()))
-  pos = np.arange(len(mlii))
+  pos = np.arange(len(mlii))  
   
 #   # #Importando dados annotations MIT para DF
   r_peak = []
@@ -229,23 +230,29 @@ if __name__ == "__main__":
 
   annotations_txt = open("uploads_src/200annotations.txt", "r")
   for index in annotations_txt:
-    r_peak.append(index[15:21])
+    # r_peak.append(index[15:21])
     tp_sig.append(index[26])
   annotations_txt.close()
   
-  del r_peak[0]
-  del r_peak[1]
+  # del r_peak[0]
+  # del r_peak[1]
   del tp_sig[0]
   del tp_sig[1]
+  
+  
 
-  for index in range(len(r_peak)):
-    r_peak[index] = int(r_peak[index])
-
-
-#   # peaks = calcRPEAKS(mlii)
-#   # for index in range(len(peaks) - 1):
-#   #   r_peak.append(int(peaks[index]))
-
+  # for index in range(len(r_peak)):
+  #   r_peak[index] = int(r_peak[index])
+  
+  peaks = proccessCalcRPEAKS([{"signal": mlii}])[0]
+  
+  r_peak = [int(i) for i in peaks]
+  # for value in peaks.split():
+  #   r_peak.append(int(value))
+  
+  # for index in range(len(peaks) - 1):
+  #   r_peak[index] = int(peaks[index])
+        
   mlii_filter = band_filter(mlii)
   v5_filter = band_filter(v5)
   
@@ -253,7 +260,7 @@ if __name__ == "__main__":
     if r_peak[index] + 20 < len(v5_filter):
         r_peak[index] += 20
     else:
-        r_peak.pop(index)  
+        r_peak.pop(index)    
 
   min_length = min(len(mlii_filter), len(v5_filter), len(pos))
 
@@ -262,7 +269,7 @@ if __name__ == "__main__":
     "V5": v5_filter[:min_length],
     "Temp": pos[:min_length]
   })
-  
+    
 
 # # #Dividir por batida
   pnts_ant = 90
@@ -359,5 +366,10 @@ if __name__ == "__main__":
   # print(json_result)  # Este print vai ser capturado no JavaScript
   
   # arr_results.append(vetor_final_predic)
-  print(vetor_final_predic)  
+  # print(vetor_final_predic)
   
+  return [vetor_final_predic]
+
+
+if __name__ == "__main__":
+  run(process_function=inicio, prepare_signals=True, min_derivations=2, max_derivations=4)

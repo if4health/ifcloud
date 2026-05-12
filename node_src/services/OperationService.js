@@ -1,8 +1,9 @@
-const { response } = require("express");
 const FhirResourceError = require("../operations/erros/FhirResourceError");
 const { default: FhirApi } = require("../providers/FhirApi");
 const PythonRunner = require("../providers/PythonRunner");
 const { buildFhirUrl } = require("../helpers/fhir/requestStrategies");
+const { mapComponentToPayload } = require("../helpers/fhir/fhirComponentMapper");
+const { getAccessor } = require("../helpers/fhir/fhirValueAcessor");
 
 class OperationService {
   async startOperation(body) {
@@ -23,7 +24,6 @@ class OperationService {
     }
 
     const { arrResourceComponentsToChange, arrDataFromResourceComponents } = this._mapComponentsToData(fhirComponents, components);
-
     /**
      * Processed data from python script
      * scriptName: script that will be executed
@@ -52,6 +52,9 @@ class OperationService {
     };
   }
 
+  /**
+   * @deprecated
+   */
  async startFormOperation(body) {
   const {
     resourceType,
@@ -118,14 +121,18 @@ class OperationService {
   // Returns the data in the field that will be changed
   _getDataFromResourceComponentByChangeField(
     resourceComponent,
-    requestComponent
+    changeField
   ) {
-    if (resourceComponent["valueSampledData"][requestComponent.changeField]) {
-      return resourceComponent["valueSampledData"][requestComponent.changeField];
+    const { get } = getAccessor(resourceComponent);
+    const data = get(resourceComponent, changeField);
+
+    if (data == null) {
+      throw new FhirResourceError(
+        `Field '${changeField}' does not exist in component`
+      );
     }
-    throw new FhirResourceError(
-      `Field '${requestComponent.changeField}' does not exist in component`
-    );
+
+    return data;
   }
 
   /**
@@ -142,12 +149,15 @@ class OperationService {
         resourceComponents,
         requestComponent.index
       );
+
+      this._getDataFromResourceComponentByChangeField(
+        resourceComponentToChange,
+        requestComponent.changeField
+      )
+
       arrResourceComponentsToChange.push(resourceComponentToChange);
       arrDataFromResourceComponents.push(
-        this._getDataFromResourceComponentByChangeField(
-          resourceComponentToChange,
-          requestComponent
-        )
+        mapComponentToPayload(resourceComponentToChange)
       );
     }
 
@@ -161,28 +171,19 @@ class OperationService {
    * processedData: Data that was processed in the python script
    */
   _applyProcessedValues(componentsToChange, requestComponents, processedData) {
-    const resultComponents = [];
+    return processedData.map((rawValue, i) => {
+    const clonedComponent = JSON.parse(JSON.stringify(componentsToChange[i]));
+    const field = requestComponents[i].changeField;
 
-    for (let i = 0; i < processedData.length; i++) {
-      const componentOriginal = componentsToChange[i];
-      const requestComponent = requestComponents[i];
+    const normalizedValue = Array.isArray(rawValue)
+      ? rawValue.join(" ")
+      : rawValue?.toString().replace(/(\r\n|\n|\r)/gm, "");
 
-      const clonedComponent = JSON.parse(JSON.stringify(componentOriginal));
-      const field = requestComponent.changeField;
-      const rawValue = processedData[i];
+    const { set } = getAccessor(clonedComponent);
+    set(clonedComponent, field, normalizedValue);
 
-      const normalizedValue = Array.isArray(rawValue)
-        ? rawValue.join(" ")
-        : rawValue;
-
-      clonedComponent["valueSampledData"][field] = normalizedValue
-        ?.toString()
-        .replace(/(\r\n|\n|\r)/gm, "");
-
-      resultComponents.push(clonedComponent);
-    }
-
-    return resultComponents;
+    return clonedComponent;
+    });
   }
 }
 

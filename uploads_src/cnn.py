@@ -29,6 +29,7 @@ import sys
 from helpers.file_utils import read_params_file, write_params_file
 import os
 from helpers.script_runner import run
+from calcRPEAKS import proccessCalcRPEAKS
 
 #Functions
 
@@ -160,8 +161,8 @@ def proccessCnn(data):
   # #Importando dados sinal MIT para DF
   tempoimport1 = time.time()
   
-  mlii = data[0]
-  v5 =  data[1]
+  mlii = data[0]['signal']
+  v5 =  data[1]['signal']
   
   pos = np.arange(len(mlii))
 
@@ -171,17 +172,20 @@ def proccessCnn(data):
 
   annotations_txt = open("uploads_src/200annotations.txt", "r")
   for index in annotations_txt:
-    r_peak.append(index[15:21])
+    # r_peak.append(index[15:21])
     tp_sig.append(index[26])
   annotations_txt.close()
-
-  del r_peak[0]
-  del r_peak[1]
+  
+  # del r_peak[0]
+  # del r_peak[1]
   del tp_sig[0]
   del tp_sig[1]
 
-  for index in range(len(r_peak)):
-    r_peak[index] = int(r_peak[index])
+  peaks = proccessCalcRPEAKS([{"signal": mlii}])[0]
+  
+  r_peak = [int(i) for i in peaks]
+  # for index in range(len(r_peak)):
+  #   r_peak[index] = int(r_peak[index])
 
   tempoimport2 = time.time()
   tempoimport = tempoimport2 - tempoimport1
@@ -230,4 +234,4 @@ def proccessCnn(data):
   return [vetor_final_predic]
   
 if __name__ == "__main__":
-  run(process_function=proccessCnn, prepare_signals=True, min_derivations=2)
+  run(process_function=proccessCnn, prepare_signals=True, min_derivations=2, max_derivations=2)
