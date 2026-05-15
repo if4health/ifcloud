@@ -767,6 +767,30 @@ if not isinstance(results, list):
 
 # Casos de Teste
 
-Em desenvolvimento.
+Para facilitar os testes e demonstrar as possibilidades do IF-Cloud, o projeto disponibiliza alguns arquivos de exemplo no diretório:
+
+```text
+testfiles/
+```
+
+Estrutura:
+
+```text
+├── config-ifcloud.json
+├── FHIR-Observation-1-lead-ECG-snippet.json
+├── FHIR-Observation-2-lead-ECG-snippet.json
+└── params-route-direct.json
+```
+
+---
+
+## Descrição dos arquivos
+
+| Arquivo | Descrição |
+|---|---|
+| `config-ifcloud.json` | JSON de configuração utilizado pela rota `/operation` |
+| `FHIR-Observation-1-lead-ECG-snippet.json` | Recurso FHIR Observation contendo uma derivação de ECG |
+| `FHIR-Observation-2-lead-ECG-snippet.json` | Recurso FHIR Observation contendo duas derivações de ECG |
+| `params-route-direct.json` | Corpo de exemplo utilizado na rota `/direct/params` |
 
 ---
