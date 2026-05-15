@@ -8,13 +8,29 @@ class PythonRunner {
   constructor() {
     this.scriptsDir = "./uploads_src";
     this.tempDir = path.join(this.scriptsDir, "temp");
+    // Use the Python executable defined in .env, defaulting to "python3"
+    this.pythonExecutable = process.env.PYTHON_EXECUTABLE || "python3";
   }
 
+  /**
+   * Validates and executes a Python script
+   *
+   * @param {string} scriptName - Name of the Python script to execute.
+   * @param {object} params - Data to be passed to the script.
+   * @returns {Promise<object>} Parsed JSON output produced by the script.
+   * @throws {PythonScriptError} If the script is not found or execution fails.
+   */
   async run(scriptName, params) {
     await this._verifyScriptExists(scriptName);
     return await this._execute(scriptName, params);
   }
 
+  /**
+   * Checks if the requested script exists in the scripts directory.
+   *
+   * @param {string} scriptName - Name of the Python script file to look for.
+   * @throws {PythonScriptError} 400 if the script file is not found.
+   */
   async _verifyScriptExists(scriptName) {
     const files = await fsPromises.readdir(this.scriptsDir);
     if (!files.includes(scriptName)) {
@@ -25,11 +41,16 @@ class PythonRunner {
     }
   }
 
+  /**
+   * Writes params to a temp file, runs the Python script via spawnSync,
+   *
+   * @param {string} scriptName - Name of the Python script
+   * @param {object} params - Data to be passed to the script.
+   * @returns {object} Parsed JSON data from the script output file.
+   * @throws {PythonScriptError} 500 if execution fails or output file is missing.
+   */
   async _execute(scriptName, params) {
-    /**
-     * Check if directory exists
-     * If dosen't exists, he it's created
-     */
+    // Create temp directory if it doesn't exist
     if (!fs.existsSync(this.tempDir)) {
       fs.mkdirSync(this.tempDir, { recursive: true });
     }
@@ -48,17 +69,22 @@ class PythonRunner {
        * Atualy is 100MB for the buffer
        */
       const processResult = spawnSync(
-        "python3",
+        this.pythonExecutable,
         [path.join(this.scriptsDir, scriptName), paramsFilePath],
         { encoding: "utf8", maxBuffer: 1024 * 1024 * 100 }
       );
 
       const { stdout, stderr, status } = processResult;
 
+      // Forward only [DEBUG] lines from Python to Node console
       if (stderr) {
-        stderr.trim().split("\n")
-          .filter((line) => line.startsWith("[DEBUG]"))
-          .forEach((line) => console.log(line));
+        stderr
+            .trim()
+            .split("\n")
+            .filter((line) => 
+              line.startsWith("[DEBUG]") ||
+              line.startsWith("[INFO]"))
+            .forEach((line) => console.log(line));
       }
 
       // Verify if the scripts returns a ERROR
@@ -67,29 +93,28 @@ class PythonRunner {
           .trim()
           .split("\n")
           .pop();
-
         throw new PythonScriptError(cleanError, 500);
       }
 
-      // Remove desnecessary prints (like TensorFlow logs) and get the last print, it's the necessary print to get the file with processed data
+      // The last line of stdout is the output file path printed by the script
       const outputLines = stdout.trim().split("\n");
       const processedFilePath = outputLines[outputLines.length - 1].trim();
-
       console.log("[DEBUG] processedFilePath:", processedFilePath);
 
       if (!fs.existsSync(processedFilePath)) {
         throw new PythonScriptError(
-          `Expected output file not found: ${processedFilePath}`
+          `Expected output file not found: ${processedFilePath}`,
+          500
         );
       }
 
-      const processedData = JSON.parse(
-        fs.readFileSync(processedFilePath, "utf8")
-      );
-
-      return processedData;
+      return JSON.parse(fs.readFileSync(processedFilePath, "utf8"));
     } catch (error) {
-      throw new PythonScriptError(error.message);
+      if (error instanceof PythonScriptError) {
+        throw error;
+      }
+
+      throw new PythonScriptError(error.message, 500);
     } finally {
       // Remove file from folder
       if (fs.existsSync(paramsFilePath)) {

@@ -3,12 +3,16 @@ const fs = require("fs");
 
 class FileUploaderController{
     async scriptUploader(req, res){
+        return res.status(503).json({
+            message: "Script uploads are temporarily disabled"
+        });
+
         try{
             var script = req.files.script;
             var scriptName = script.name;
             var scriptExtName = path.extname(scriptName.toLowerCase());
             var filetype = /.py/;
-
+ 
             const msg = { text: "|o| Sucessfull Upload |o|" };
 
             if (!filetype.test(scriptExtName)) {

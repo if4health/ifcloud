@@ -12,7 +12,8 @@ def read_params_file(params_file):
                 return []
             return json.loads(content)
     except:
-        return []
+        raise Exception(f"Error to read the file: {params_file}")
+
 
 """
     Write the result data in the entry file
@@ -22,5 +23,4 @@ def write_params_file(params_file, data):
         with open(params_file, 'w') as file:
             json.dump(data, file)
     except IOError:
-        print(f"Error to write in the file: {params_file}")
-        sys.exit(1)
+        raise Exception(f"Error to write in the file: {params_file}")

@@ -4,6 +4,7 @@ const PythonRunner = require("../providers/PythonRunner");
 const { buildFhirUrl } = require("../helpers/fhir/requestStrategies");
 const { mapComponentToPayload } = require("../helpers/fhir/fhirComponentMapper");
 const { getAccessor } = require("../helpers/fhir/fhirValueAcessor");
+const { debug } = require("../operations/loggers/debug");
 
 class OperationService {
   async startOperation(body) {
@@ -15,8 +16,13 @@ class OperationService {
       components,
     } = body;
 
+    debug("ID", id)
+    debug("resourceType", resourceType)
+
     const fhirPath = buildFhirUrl("byId", { id, resourceType });
-    const resource = await FhirApi.get(fhirPath);
+    const resource = await FhirApi.get(fhirPath).catch((error) => {
+      throw new FhirResourceError(`Failed to fetch FHIR resource: ${error.message}`);
+    });
     const fhirComponents = resource.component;
 
     if (!fhirComponents) {
@@ -24,11 +30,8 @@ class OperationService {
     }
 
     const { arrResourceComponentsToChange, arrDataFromResourceComponents } = this._mapComponentsToData(fhirComponents, components);
-    /**
-     * Processed data from python script
-     * scriptName: script that will be executed
-     * arrDataFromResourceComponents: data that will be used in python script
-     */
+    
+    // Run the Python script with the extracted component data
     const processedData = await PythonRunner.run(
       scriptName,
       arrDataFromResourceComponents
@@ -40,7 +43,7 @@ class OperationService {
       processedData
     );
 
-    // If true, will be returned just the components with processed data
+    // If true, return only the updated components instead of the full resource
     if (returnOnlyFieldsComponents) {
       return updatedComponents;
     }
@@ -53,62 +56,13 @@ class OperationService {
   }
 
   /**
-   * @deprecated
+   * Finds a FHIR resource component by index.
+   *
+   * @param {Array} resourceComponents - Full list of components from the FHIR resource.
+   * @param {number|string} index - Index of the component.
+   * @returns {Object} The component at the given index.
+   * @throws {FhirResourceError} If no component exists at the given index.
    */
- async startFormOperation(body) {
-  const {
-    resourceType,
-    id,
-    scriptName,
-    onlyComponent,
-    components,
-  } = body;
-
-  const resource = await FhirApi.get(resourceType + "/" + id);
-  const fhirComponents = resource.component;
-  if (!fhirComponents) {
-    throw new FhirResourceError("Resource does not contain components");
-  }
-
-  const {
-    arrResourceComponentsToChange,
-    arrDataFromResourceComponents
-  } = this._mapComponentsToData(fhirComponents, components);
-
-  const processedData = await PythonRunner.run(
-    scriptName,
-    arrDataFromResourceComponents
-  );
-
-    // Caso contrário, segue o fluxo normal
-  const updatedComponents = this._applyProcessedValues(
-    arrResourceComponentsToChange,
-    components,
-    processedData
-  );
-
-  if (onlyComponent === "true") {
-    const mappedComponents = components.map((comp, i) => ({
-      index: comp.index,
-      changeField: comp.changeField,
-      original: arrResourceComponentsToChange[i],
-      processed: updatedComponents[i]
-    }));
-
-    return {
-      resourceType,
-      id,
-      scriptName,
-      components: mappedComponents
-    };
-  }
-
-  return {
-    ...resource,
-    component: updatedComponents,
-  };
-}
-  // Returns the component in the informed index
   _getComponentToChangeByIndex(resourceComponents, index) {
     if (resourceComponents[index]) {
       return resourceComponents[index];
@@ -118,7 +72,14 @@ class OperationService {
     );
   }
 
-  // Returns the data in the field that will be changed
+  /**
+   * Gets the value of a specific field from a FHIR component.
+   *
+   * @param {Object} resourceComponent - A single FHIR resource component.
+   * @param {string} changeField - The field name to read from the component.
+   * @returns {*} The value found at the given field.
+   * @throws {FhirResourceError} If the field does not exist in the component.
+   */
   _getDataFromResourceComponentByChangeField(
     resourceComponent,
     changeField
@@ -136,10 +97,15 @@ class OperationService {
   }
 
   /**
- * Prepare components to execute data in python
- * arrResourceComponentsToChange: components that will be needed to change by data come for python
- * arrDataFromResourceComponents: data in the ECG resource. They will be processed in the python script
- */
+   * Maps each requested component to FHIR resource data,
+   * building the arrays needed to run and update the Python script.
+   *
+   * @param {Array} resourceComponents - Full list of components from the FHIR resource.
+   * @param {Array<{index: number|string, changeField: string}>} requestComponents - Components requested
+   * @returns {{ arrResourceComponentsToChange: Array, arrDataFromResourceComponents: Array }}
+   *   - arrResourceComponentsToChange: original FHIR components that will be updated after processing.
+   *   - arrDataFromResourceComponents: serialized payloads to be sent to the Python script.
+   */
   _mapComponentsToData(resourceComponents, requestComponents) {
     const arrResourceComponentsToChange = [];
     const arrDataFromResourceComponents = [];
@@ -164,11 +130,14 @@ class OperationService {
     return { arrResourceComponentsToChange, arrDataFromResourceComponents };
   }
 
-    /**
-   * Change components with processed data
-   * arrResourceComponentsToChange: components that will be changed
-   * components: form components to change resourceComponents
-   * processedData: Data that was processed in the python script
+  /**
+   * Applies the Python script's output back into the original FHIR components,
+   * returning a new array of updated components without mutating the originals.
+   *
+   * @param {Array} componentsToChange - Original FHIR components to be updated.
+   * @param {Array<{index: number|string, changeField: string}>} requestComponents - Caller-defined components indicating which field to update.
+   * @param {Array} processedData - Output values returned by the Python script
+   * @returns {Array} New array of FHIR components with the processed values applied.
    */
   _applyProcessedValues(componentsToChange, requestComponents, processedData) {
     return processedData.map((rawValue, i) => {

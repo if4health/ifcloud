@@ -1,6 +1,4 @@
 import axios from "axios";
-import dotenv from "dotenv";
-dotenv.config();
 
 class FhirApi {
   constructor() {
@@ -40,9 +38,12 @@ class FhirApi {
 
   _setupInterceptor() {
     this.client.interceptors.request.use(async (config) => {
-
       if (this._tokenExpired()) {
-        await this._authenticate();
+        try {
+          await this._authenticate();
+        } catch (error) {
+          throw new Error(`FHIR authentication failed: ${error.message}`);
+        }
       }
 
       config.headers.Authorization = `Bearer ${this.token}`;

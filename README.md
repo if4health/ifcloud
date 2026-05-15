@@ -1,141 +1,770 @@
-# Projeto IF-Cloud
-  
-![IF-Cloud (API FHIR para Integração de projetos de saúde digital)](./img/IF-Cloud-paper-CBIS2024.png)
+# FHIR Script Runner API
 
-A Figura ilustra a visão  geral do ecossistema de saúde digital para monitoramento contínuo de biossinais com troca de recursos no padrão FHIR. As funcionalidades das APIs em nuvem para suportar projetos IoT e aplicações web de biossinais podem ser resumidas em CRUD (Criar/Ler/Atualizar/Excluir ) e Processamento. **IF-Cloud** - *API FHIR para Integração de projetos de saúde digital* - compõe o ecossistema como API de processamento.
+API responsável por executar algoritmos Python sobre recursos FHIR, permitindo o processamento de sinais biomédicos e o retorno automático em formato FHIR.
 
-IF-Cloud auomatiza a execução de scripts Python que tem upload realizado por meio de uma interface gráfica. IF-Cloud utiliza os dados dos recursos FHIR provenientes de alguma API de CRUD e retorna um outro recurso FHIR com os dados processados pelos scripts. Ou seja, IF-Cloud permite a inclusão de novas funcionalidades em ecossistemas de saúde digital mediante um upload de arquivos de script.
+---
 
+# Sumário
 
-## Requisitos
-- NodeJS [https://nodejs.org/en/](https://nodejs.org/en/)
-- Python [https://www.python.org/](https://www.python.org/)
-- Pip - O gerenciador de pacotes do Python.
-- Git - Para clonar o repositório.
-- Aplicação IF-Cloud (este repositório)
-- Aplicação FHIR que realiza as operações CRUD
+- [Visão Geral](#visão-geral)
 
+- [Instalação](#instalação)
+  - [Pré-requisitos](#pré-requisitos)
+  - [Clonando o projeto](#clonando-o-projeto)
+  - [Instalação das dependências Node.js](#instalação-das-dependências-nodejs)
+  - [Instalação das dependências Python](#instalação-das-dependências-python)
+  - [Configuração do arquivo .env](#configuração-do-arquivo-env)
+  - [Explicação das variáveis de ambiente](#explicação-das-variáveis-de-ambiente)
+  - [Executando a aplicação](#executando-a-aplicação)
+  - [Verificando funcionamento](#verificando-funcionamento)
 
-IF-Cloud depende de uma API FHIR com operações CRUD para fornecer os dados a serem processados, pois não tem banco de dados. Diversas implementações de APIs FHIR em nuvem estão disponíveis para realizar as operações CRUD.
-Nós recomendamos a [nossa API FHIR especializada em biossinais](https://if4health.charqueadas.ifsul.edu.br/biosignalinfhir/api-docs/) e você encontra o código fonte [neste link](https://github.com/if4health/FASS-ECG). Alternativamente, IF-Cloud também pode utilizar recursos FHIR da API pública de testes [HAPI FHIR](https://hapi.fhir.org/baseR4/swagger-ui/).
+- [Arquitetura](#arquitetura)
 
+- [Imagens do Sistema](#imagens-do-sistema)
+  - [A - Algoritmos Disponíveis](#a---algoritmos-disponíveis)
+  - [B - Campos do Formulário](#b---campos-do-formulário)
+  - [C - Retorno do Script Executado](#c---retorno-do-script-executado)
 
-## Instalação
-1. Faca download deste repositorio
-```sh
-git clone https://github.com/if4health/ifcloud .
+- [Rotas](#rotas)
+  - [Exemplo da rota /direct/params](#exemplo-da-rota-directparams)
+  - [Exemplo da rota /run_script/operation](#exemplo-da-rota-run_scriptoperation)
+
+- [Tipos de Requisição](#tipos-de-requisição)
+  - [components](#components)
+  - [1. byId](#1-byid)
+  - [2. byIdAndMinute](#2-byidandminute)
+  - [3. byIdAndMinuteInterval](#3-byidandminuteinterval)
+
+- [Preparando Algoritmos Python](#preparando-algoritmos-python)
+  - [Estrutura mínima do script](#estrutura-mínima-do-script)
+  - [Exemplo completo - HelloWorld.py](#exemplo-completo---helloworldpy)
+
+- [Explicação da função run](#explicação-da-função-run)
+
+- [Estrutura dos Dados Recebidos no Python](#estrutura-dos-dados-recebidos-no-python)
+  - [Campo signal](#campo-signal)
+  - [Campo metadata](#campo-metadata)
+
+- [Trabalhando com os dados dentro do algoritmo Python](#trabalhando-com-os-dados-dentro-do-algoritmo-python)
+  - [Estrutura esperada no algoritmo](#estrutura-esperada-no-algoritmo)
+  - [Explicação](#explicação)
+  - [Observação importante](#observação-importante)
+
+- [Exemplo de Entrada do Python](#exemplo-de-entrada-do-python)
+
+- [Exemplo de Saída do Python](#exemplo-de-saída-do-python)
+
+- [Conversão Automática do Retorno para FHIR](#conversão-automática-do-retorno-para-fhir)
+- [Exemplo de retorno FHIR montado automaticamente com duas derivações](#exemplo-de-retorno-fhir-montado-automaticamente-com-duas-derivações)
+
+- [Retorno dos Scripts](#retorno-dos-scripts)
+
+- [Casos de Teste](#casos-de-teste)
+
+---
+
+---
+
+# Visão Geral
+
+A aplicação permite:
+
+- Buscar recursos FHIR
+- Extrair sinais biomédicos
+- Executar scripts Python personalizados
+- Retornar automaticamente os resultados em formato FHIR
+
+Os algoritmos podem ser executados sobre:
+
+- Um recurso específico
+- Recursos de um minuto específico
+- Recursos dentro de um intervalo de tempo
+
+---
+
+# Instalação
+
+## Pré-requisitos
+
+Antes de iniciar, é necessário possuir instalado:
+
+- Node.js
+- NPM
+- Python 3
+- Pip
+
+---
+
+## Clonando o projeto
+
+```bash
+git clone https://github.com/if4health/ifcloud
 ```
-2. Configure variáveis de ambiente:
 
-Na pasta raiz do projeto, temos um arquivo `.env.example`. Você deve renomear este arquivo para `.env` e seguir as instruções abaixo:
-| Rota | Descrição |
-|------|-----------|
-| `FHIR_API_URL` | URL da API FHIR que realiza as operações CRUD |
-| `PORT` | Porta na qual a aplicação irá rodar |
-| `GRANT_TYPE` | Tipo de autorização da API FHIR - Disponível em: https://if4health.charqueadas.ifsul.edu.br/biofass/auth/device |
-| `CLIENT_ID` | Regra de autenticação na API FHIR - Disponível em: https://if4health.charqueadas.ifsul.edu.br/biofass/auth/device |
-| `CLIENT_SECRET` | Segredo de autorização da API FHIR - Disponível em: https://if4health.charqueadas.ifsul.edu.br/biofass/auth/device |
+```bash
+cd ifcloud
+```
 
+---
 
-3. Instale as dependencias de NodeJS para este projeto 
-```sh
+# Instalação das dependências Node.js
+
+```bash
 npm install
 ```
 
-4. Instale as dependencias de Python para este projeto 
-```sh
+---
+
+# Instalação das dependências Python
+
+Instale as dependências utilizadas pelos algoritmos Python.
+
+```bash
 pip install -r requirements.txt
 ```
 
+---
 
-## Utilização
-Após instalar todas as dependências, você pode iniciar a aplicação com:
-```sh
+# Configuração do arquivo `.env`
+
+Renomeie o arquivo `.env.example` para `.env` na raiz do projeto.
+
+Exemplo:
+
+```env
+
+FHIR_API_URL=https://if4health.charqueadas.ifsul.edu.br/biofass/
+
+PYTHON_EXECUTABLE=python3
+
+PORT=8000
+
+GRANT_TYPE=my_client_credentials
+
+CLIENT_ID=my_client_id
+
+CLIENT_SECRET=my_client_secret
+```
+
+---
+
+# Explicação das variáveis de ambiente
+
+| Variável | Descrição |
+|---|---|
+| `FHIR_URL` | URL do servidor FHIR |
+| `PYTHON_EXECUTABLE` | Interpretador Python utilizado para executar os scripts |
+| `PORT` | Porta em que o servidor será executado |
+| `GRANT_TYPE` | Tipo de authenticação no servidor FHIR |
+| `CLIENT_ID` | ID de authenticação no servidor FHIR |
+| `CLIENT_SECRET` | SECRET de authenticação no servidor FHIR |
+
+---
+
+# Executando a aplicação
+```bash
 npm start
 ```
-Visualize o IF-Cloud rodando no navegador:
-```sh
-http://localhost:{PORTA_ESCOLHIDA}/ifcloud/home
+
+---
+
+# Verificando funcionamento
+
+Após iniciar a aplicação:
+
+```bash
+GET /infos/scripts
 ```
 
-**JSON de Configuração** de IF-Cloud para fins de controle do fluxo de dados da interface e da automação dos scripts Python.
+Resposta esperada:
+Um array dos algoritmos disponíveis para execução. 
 
 ```json
-{
-    "resourceType": "Observation",
-    "id": ":id_from_CRUD_API",
-    "scriptName": "HelloWorld.py",
-    "returnOnlyFieldsComponents": true,
-    "components": [
-        {
-            "index": "0",
-            "changeField": "data"
-        }
-    ]
-}
+[
+    {
+        "name": "HelloWorld.py",
+        "description": "Show HelloWorld message"
+    }
+]
 ```
 
-- `resourceType` - tipo de Recurso FHIR que IF-Cloud deverá buscar na API de CRUD;
-- `id` - identificador do Recurso FHIR que a aplicação deverá buscar na API de CRUD;
-- `scriptName` - nome do script disponível no diretório Python SRC a ser executado.
-- `returnOnlyFieldsComponents` - se IF-Cloud irá retornar somente os campos alterados ou todo o Recurso FHIR para o solicitante.
-- `components` - Configura quais as chaves do Recurso FHIR a serem buscadas e serem alteradas ou retornadas pelo script configurado em `scriptName`. Este pode ter **n** objetos de configuração, irá depender se o recurso **FHIR** contém as chaves e os índices.
-    - `index` - índice da chave `changeField` a ser alterado no Recurso FHIR;
-	- `changeField` - determina qual a chave do Recurso FHIR deverá ser alterada;
-	
+---
 
+# Arquitetura
 
-![Interface de Usuário do IF-Cloud](./img/IF-Cloud-UI.png)
+Fluxo simplificado:
 
-Para facilitar a utilização, IF-Cloud disponibiliza uma interface de usuário.
-- **Item (A)** - Ao selecionar um script em python para fazer upload em IF-Cloud (menu Upload), ele fica salvo em uma lista de scipts disponiveis e pode ser executado a qualquer momento.
-- **Item (B)** - Uma das formas de carregar o JSON de configuração de IF-Cloud é clicando no menu Form da UI e preenchendo o formulário.
-- **Item (C)** - Ao enviar o formulário, IF-Cloud executa o script selecionado e redireciona uma página informativa mostrando o resultado da execucao do script conforme as configurações do JSON de configuração.
+1. API recebe a requisição
+2. Recursos FHIR são carregados
+3. Os sinais são extraídos
+4. Um arquivo temporário é gerado
+5. O Python lê esse arquivo
+5. O script Python é executado
+6. O resultado é escrito no arquivo temporário
+7. O resultado é lido no Node
+8. O retorno é automaticamente convertido para formato FHIR
 
+---
 
+# Imagens do Sistema
 
-## Rotas
+## A - Algoritmos Disponíveis
 
-IF-Cloud oferece duas categorias de rotas na chamada dos scripts carregados na nuvem. 
+Imagem mostrando os algoritmos disponíveis.
 
-A chamada por **rota direta** é indicada para testes de funcionamento do próprio script pelo usuário/desenvolvedor. Esta abordagem não tem acesso aos recursos da API de CRUD e também não gera recursos FHIR, pois IF-Cloud faz apenas a execução de um script Python disponível no diretório. 
+![Imagem A](./docs/images/A.png)
 
-A chamada na **rota principal** é o método de execução dos scripts cuja resposta pode ser retornada em um recurso FHIR. Sempre que IF-Cloud receber uma requisição na rota principal, é necessário buscar os dados salvos na API de CRUD para serem sobrescritos com processamento intermediado pelos scripts salvos em IF-Cloud. 
+---
 
-| Rota                         | Método | Descrição                                                                                                      | Exemplo |
-|------------------------------|--------|----------------------------------------------------------------------------------------------------------------|---------|
-| `/run_script/direct/params`  | POST   | Executa um script salvo em IF-Cloud com parâmetros de entrada.                                                 | Veja abaixo |
-| `/run_script/direct/HelloWorld.py` | GET | Executa o script `HelloWorld.py` salvo em IF-Cloud para testar se a aplicação foi instalada corretamente. Não precisa de parâmetros. | N/A     |
-| `/run_script/operation`      | POST   | IF-Cloud executa um script de acordo com o **JSON de configuração** e modifica o conteúdo de uma chave de um recurso FHIR proveniente da API de CRUD `$(FHIR_API_URL)`. | Veja documentação |
+## B - Campos do Formulário
 
-### Exemplo de chamada para `/run_script/direct/params`
+Imagem demonstrando os campos utilizados para configurar a execução do algoritmo.
+
+![Imagem B](./docs/images/B.png)
+
+---
+
+## C - Retorno do Script Executado
+
+Imagem demonstrando o retorno gerado após a execução do script.
+
+![Imagem C](./docs/images/C.png)
+
+---
+
+# Rotas
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `POST` | `/run_script/operation` | Executa um algoritmo Python utilizando recursos FHIR |
+| `POST` | `/direct/params` | Executa diretamente um script Python enviando parâmetros |
+| `GET` | `/infos/scripts` | Lista os scripts disponíveis |
+| `GET` | `/infos/routes` | Lista as rotas disponíveis |
+
+---
+
+## Exemplo da rota `/direct/params`
+
+### Requisição
 
 ```json
 {
   "scriptName": "HelloWorld.py",
-  "params": ["949.0 948.0 950.0 950.0 951.0 977.0 977.0 975.0 978.0 978.0 979.0 976.0"]
+  "params": ["949.0 948.0 950.0 ... 950.0 951.0 969.0"]
 }
 ```
 
+---
+## Exemplo da rota `/run_script/operation`
 
-## Casos de teste
+---
 
-Para mostrar as possibilidades de IF-Cloud, nós coletamos um trecho de um eletrocardiograma (ECG) do [PhysioNet](https://physionet.org/), um repositório de dados médicos disponíveis gratuitamente.
+## Tipos de Requisição
 
-O diretório `testfiles` contém o seguinte material para iniciantes no IF-Cloud: 
-```sh
-├── calcBPM.py
-├── config-ifcloud.json
-├── FHIR-Observation-1-lead-ECG-snippet.json
-├── HelloWorld.py
-└── params-route-direct.json
+Todos os tipos de requisição utilizam a mesma estrutura base:
+
+```json
+{
+  "typeRequest": "byId",
+  "resourceType": "Observation",
+  "id": "6a06066114fa4ef68f573d98",
+  "scriptName": "HelloWorld.py",
+  "returnOnlyFieldsComponents": false,
+  "components": [
+    {
+      "index": "0",
+      "changeField": "data"
+    }
+  ]
+}
 ```
 
-1. O arquivo `FHIR-Observation-1-lead-ECG-snippet.json` contém um trecho de um ECG de uma derivação descrito como um recurso FHIR Observation para ser inserido em `$(FHIR_API_URL)`.
-2. O script `HelloWorld.py` serve para você testar a implantação de IF-cloud na nuvem ou no localhost na rota `GET $(URL_IFCLOUD)/run_script/direct/HelloWorld.py`
-3. O script `calcBPM.py` realiza o cálculo da frequência cardíaca de um determinado ECG. **Entrada**: Caminho para um arquivo .txt que contém as derivações no formate de um array com as derivações no formato de strings. **Saída**: Caminho do arquivo de entrada com os valore gravados dentro dele.
-4. Utilize `params-route-direct.json` no corpo da requisição `POST $(URL_IFCLOUD)/run_script/direct/params` que IF-Cloud vai retornar o vetor de BPMs do ECG
-5. Utilize `config-ifcloud.json` no corpo da requisição `POST $(URL_IFCLOUD)/run_script/operation` que IF-Cloud vai retornar o vetor de BPMs do ECG descrito como um FHIR Observation. 
-	- Não esqueça de substituir `:id_from_CRUD_API` pelo ID que a API FHIR responder após o `POST` de `FHIR-Observation-1-lead-ECG-snippet.json`.
+Os campos abaixo são obrigatórios para todos os tipos de requisição:
 
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `resourceType` | string | Tipo do recurso FHIR |
+| `id` | string | ID do recurso FHIR |
+| `scriptName` | string | Nome do script Python |
+| `returnOnlyFieldsComponents` | boolean | Define se apenas os campos alterados dos components serão retornados |
+| `typeRequest` | string | Estratégia de execução |
+| `components` | array | Lista de componentes que serão processados |
 
+---
+
+## components
+
+O campo `components` deve possuir pelo menos um item.
+
+Estrutura:
+
+```json
+{
+  "index": "0",
+  "changeField": "data"
+}
+```
+
+### Campos
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `index` | number/string | Índice ou código do componente |
+| `changeField` | string | Campo que será alterado |
+
+---
+
+# 1. byId
+
+Executa o algoritmo utilizando apenas o recurso informado pelo ID.
+
+## Campos específicos obrigatórios
+
+Nenhum campo adicional.
+
+## Estrutura de validação
+
+```javascript
+{
+  typeRequest: "byId"
+}
+```
+
+## Exemplo
+
+```json
+{
+  "typeRequest": "byId",
+  "resourceType": "Observation",
+  "id": "6a06066114fa4ef68f573d98",
+  "scriptName": "HelloWorld.py",
+  "returnOnlyFieldsComponents": false,
+  "components": [
+    {
+      "index": "0",
+      "changeField": "data"
+    },
+    {
+      "index": "1",
+      "changeField": "data"
+    }
+  ]
+}
+```
+
+---
+
+# 2. byIdAndMinute
+
+Executa o algoritmo utilizando um minuto específico do recurso.
+
+## Campos específicos obrigatórios
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `minute` | integer | Minuto que será utilizado |
+
+---
+
+## Regras de validação
+
+- `minute` deve ser um número inteiro
+- `minute` deve ser maior que 0
+
+---
+
+## Estrutura de validação
+
+```javascript
+{
+  typeRequest: "byIdAndMinute",
+  minute: 1
+}
+```
+
+---
+
+## Exemplo
+
+```json
+{
+  "typeRequest": "byIdAndMinute",
+  "resourceType": "Observation",
+  "id": "6a06066114fa4ef68f573d98",
+  "minute": 3,
+  "scriptName": "HelloWorld.py",
+  "returnOnlyFieldsComponents": false,
+  "components": [
+    {
+      "index": "0",
+      "changeField": "data"
+    }
+  ]
+}
+```
+
+---
+
+# 3. byIdAndMinuteInterval
+
+Executa o algoritmo utilizando um intervalo de minutos do recurso.
+
+## Campos específicos obrigatórios
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `initialMinute` | integer | Minuto inicial |
+| `finalMinute` | integer | Minuto final |
+
+---
+
+## Regras de validação
+
+- `initialMinute` deve ser um número inteiro
+- `finalMinute` deve ser um número inteiro
+- Ambos devem ser maiores que 0
+- `finalMinute` deve ser maior que `initialMinute`
+
+---
+
+## Estrutura de validação
+
+```javascript
+{
+  typeRequest: "byIdAndMinuteInterval",
+  initialMinute: 1,
+  finalMinute: 10
+}
+```
+
+---
+
+## Exemplo
+
+```json
+{
+  "typeRequest": "byIdAndMinuteInterval",
+  "resourceType": "Observation",
+  "id": "6a06066114fa4ef68f573d98",
+  "initialMinute": 0,
+  "finalMinute": 3,
+  "scriptName": "HelloWorld.py",
+  "returnOnlyFieldsComponents": false,
+  "components": [
+    {
+      "index": "0",
+      "changeField": "data"
+    }
+  ]
+}
+```
+
+---
+
+# Preparando Algoritmos Python
+
+Todos os algoritmos devem utilizar o helper `script_runner.py`.
+
+Este arquivo é responsável por:
+
+- Ler os dados de entrada
+- Validar derivações
+- Converter sinais
+- Executar o algoritmo
+- Escrever o resultado
+
+---
+
+## Estrutura mínima do script
+
+```python
+from helpers.script_runner import run
+
+if __name__ == "__main__":
+    run(
+        process_function=my_function,
+        prepare_signals=False,
+        min_derivations=1,
+        max_derivations=4
+    )
+```
+
+---
+
+## Exemplo completo - HelloWorld.py
+
+```python
+from helpers.script_runner import run
+
+def processHelloWorld(data):
+    return ["Hello World!" for _ in (data or [1])]
+
+if __name__ == "__main__":
+    run(
+        process_function=processHelloWorld,
+        prepare_signals=False,
+        min_derivations=1,
+        max_derivations=4
+    )
+```
+
+---
+
+# Explicação da função `run`
+
+| Campo | Descrição |
+|---|---|
+| `process_function` | Função que será executada |
+| `prepare_signals` | Define se o sinal será convertido para `numpy float array` |
+| `min_derivations` | Quantidade mínima de derivações necessárias |
+| `max_derivations` | Quantidade máxima de derivações permitidas |
+
+---
+
+# Estrutura dos Dados Recebidos no Python
+
+Os scripts recebem um array de objetos JSON.
+
+Cada objeto possui:
+
+```json
+{
+  "signal": "1044 1043 1042 ...",
+  "metadata": {}
+}
+```
+
+---
+
+## Campo `signal`
+
+Antes da conversão:
+
+```text
+"1044 1043 1042 ..."
+```
+
+Após `prepare_signals=True`:
+
+```python
+np.array([1044.0, 1043.0, 1042.0, ...])
+```
+
+---
+
+## Campo `metadata`
+
+Os metadados são extraídos automaticamente do recurso FHIR.
+
+Esses campos são registrados no arquivo:
+
+```javascript
+fhirComponentMapper.js
+```
+
+Exemplo:
+
+```javascript
+const metadataExtractors = {
+  valueSampledData: (component) => ({
+    period: component.valueSampledData.period,
+  })
+};
+```
+
+---
+
+# Exemplo de Entrada do Python
+
+Arquivo JSON recebido pelo Python:
+
+```json
+[
+  {
+    "signal": "1094 1094 1094 ... 882 841 806",
+    "metadata": {
+      "period": 10
+    },
+    "valueType": "valueSampledData"
+  }
+]
+```
+
+---
+
+# Exemplo de Saída do Python
+
+```json
+[
+  "Hello World!",
+  "Hello World!"
+]
+```
+
+---
+
+# Trabalhando com os dados dentro do algoritmo Python
+
+## Estrutura esperada no algoritmo
+
+O algoritmo deve iterar sobre `data`.
+
+Exemplo:
+
+```python
+def myFunction(data):
+    results = []
+
+    for signal in data:
+        currentSignal = signal['signal']
+        period = signal['metadata']['period']
+
+        myResult = currentSignal
+
+        results.append(myResult)
+
+    return results
+```
+
+---
+
+## Explicação
+
+| Campo | Descrição |
+|---|---|
+| `signal['signal']` | Sinal pré-processado |
+| `signal['metadata']` | Metadados extraídos do recurso FHIR |
+
+---
+
+## Observação importante
+
+Quando `prepare_signals=True`, o campo:
+
+```python
+signal['signal']
+```
+
+será automaticamente convertido para:
+
+```python
+numpy.array(float)
+```
+
+Caso contrário, o valor permanecerá como string:
+
+```python
+"1044 1043 1042 ..."
+```
+
+---
+
+# Conversão Automática do Retorno para FHIR
+
+A aplicação converte automaticamente o resultado do Python para formato FHIR.
+
+Exemplo:
+
+```json
+[
+  "Hello World!",
+  "Hello World!"
+]
+```
+
+O tamanho do array define quantos `components` serão montados.
+
+Neste caso:
+
+- Resultado 1 → Component 1
+- Resultado 2 → Component 2
+
+---
+
+## Exemplo de retorno FHIR montado automaticamente com duas derivações
+
+```json
+{
+  "_id": "6a06066114fa4ef68f573d98",
+  "id": "6a06066114fa4ef68f573d98",
+  "resourceType": "Observation",
+  "status": "preliminary",
+  "category": [
+    {
+      "coding": [
+        {
+          "system": "https://if4health.charqueadas.ifsul.edu.br/biofass/",
+          "code": "procedure",
+          "display": "Procedure"
+        }
+      ]
+    }
+  ],
+  "device": {
+    "display": "12 lead EKG Device Metric"
+  },
+  "component": [
+    {
+      "code": {
+        "coding": [
+          {
+            "display": "MDC_ECG_ELEC_POTL_I"
+          }
+        ]
+      },
+      "valueSampledData": {
+        "origin": {
+          "value": 2048
+        },
+        "period": 2.77,
+        "factor": 1.612,
+        "lowerLimit": -3300,
+        "upperLimit": 3300,
+        "dimensions": 1,
+        "data": "Hello World!"
+      }
+    },
+    {
+      "code": {
+        "coding": [
+          {
+            "display": "MDC_ECG_ELEC_POTL_II"
+          }
+        ]
+      },
+      "valueSampledData": {
+        "origin": {
+          "value": 2048
+        },
+        "period": 2.77,
+        "factor": 1.612,
+        "lowerLimit": -3300,
+        "upperLimit": 3300,
+        "dimensions": 1,
+        "data": "Hello World!"
+      }
+    }
+  ]
+}
+```
+
+---
+
+# Retorno dos Scripts
+
+Os scripts devem retornar preferencialmente um array.
+
+Caso o retorno não seja um array, o sistema converte automaticamente:
+
+```python
+if not isinstance(results, list):
+    results = [results]
+```
+
+---
+
+# Casos de Teste
+
+Em desenvolvimento.
+
+---

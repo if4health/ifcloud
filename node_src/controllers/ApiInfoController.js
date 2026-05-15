@@ -42,6 +42,16 @@ class ApiInfoController {
                     scriptName: "calcBPM.py",
                     params: ["951.0 949.0 948.0 950.0 950.0 951.0", "947.0 947.0 947.0 943.0 944.0 943.0 943.0 944.0 944.0 947.0 946.0 946.0 945.0 950.0 951.0 953.0 952.0 "]
                 }
+            },
+            {
+                method: "GET",
+                path: "/infos/routes",
+                description: "List availabel routes",
+            },
+            {
+                method: "GET",
+                path: "/infos/scripts",
+                description: "List availabel scripts",
             }
         ]
 

@@ -22,20 +22,7 @@ const requestStrategies = {
  *  - 'byIdAndMinuteInterval'
  *
  * @param {Object} params - URL parameters
- *
  * @returns {string} Formatted URL
- *
- * @example
- * buildFhirUrl('byId', { resourceType: 'Observation', id: '123' })
- * // "Observation/123"
- *
- * @example
- * buildFhirUrl('byIdAndMinute', {
- *   resourceType: 'Observation',
- *   id: '123',
- *   minute: '10'
- * })
- * // "Observation/123/data/10"
  *
  */
 export function buildFhirUrl(typeRequest, params) {

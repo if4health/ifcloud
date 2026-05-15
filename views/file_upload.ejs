@@ -1,52 +1,93 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="/ifcloud/style.css">
-    <title>IFCloud File Upload</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="/ifcloud/style.css">
+  <title>IFCloud File Upload</title>
 </head>
 <body>
-    <%- include('./partials/header.ejs') %>
+<%- include('./partials/header.ejs') %>
+  <div id="content">
 
-    <div id="content">
-        <div id="card">
-            <form id="file_upload_form" action="/uploader" name="script" enctype="multipart/form-data" method="POST">
-                <div class="line">
-                    <h2>File Uploader</h2>
-                </div>
-
-                <div id="line_file" class="line">
-                    <label>Selecione o arquivo</label>
-                    <input id="file_uploader" type="file" name="script" required pattern=".{1,}">
-                </div>
-
-                <div class="line">
-                    <button id="upload">Upload File</button>
-                </div>
-            </form>
+    <div id="card">
+      <form id="file_upload_form" action="/uploader" name="script" enctype="multipart/form-data" method="POST">
+        <div class="line">
+          <h2>File Uploader</h2>
         </div>
-
-        <div id="card">
-            <div class="line">
-                <h2>Arquivos salvos na nuvem</h2>
-            </div>
-            <% if(typeof files !== 'undefined') { %>
-                <% files.forEach(element => { %>
-                    <div class="line">
-                        <p class="card_list"><%- element %></p>
-                    </div>
-                <% }); %>
-            <% }else{ %>
-                <div class="line">
-                    <p>Não existem arquivos salvo na nuvem!</p>
-                </div>
-            <% } %>
+        <div id="line_file" class="line">
+          <label>Selecione o arquivo</label>
+          <!-- Input disabled: upload functionality is temporarily unavailable -->
+          <input id="file_uploader" type="file" name="script" disabled>
         </div>
+        <div class="line">
+          <!-- Button disabled alongside the input -->
+          <button id="upload" type="button" disabled>Upload File</button>
+        </div>
+      </form>
     </div>
 
-    <%- include('./partials/footer.ejs') %>
-<body>
+    <div id="card">
+      <div class="line">
+        <h2>Arquivos salvos na nuvem</h2>
+      </div>
+      <div id="scripts-list">
+        <p>Carregando scripts...</p>
+      </div>
+    </div>
+
+  </div>
+<%- include('./partials/footer.ejs') %>
+
+<script>
+  const pythonSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="36" height="36" aria-hidden="true">
+      <linearGradient id="pyA" x1="10.458" x2="22.341" y1="10.933" y2="22.079" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#4c8dbd"/>
+        <stop offset="1" stop-color="#3674a8"/>
+      </linearGradient>
+      <linearGradient id="pyB" x1="25.033" x2="37.771" y1="25.374" y2="37.628" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#f5c942"/>
+        <stop offset="1" stop-color="#e8a500"/>
+      </linearGradient>
+      <path fill="url(#pyA)" d="M24.047 5c-1.555.005-3.04.138-4.35.376C16.07 6.007 15.5 7.422 15.5 9.5v3h9v1h-12.5c-2.219 0-4.163 1.333-4.77 4.086-.698 3.169-.729 5.148 0 8.456.541 2.463 1.832 4.086 4.051 4.086H13.5v-4c0-2.5 2.167-4.706 4.77-4.706H27.5c2.133 0 3.77-1.756 3.77-3.913V9.5c0-2.093-.886-3.576-2.77-3.924-1.443-.261-2.943-.581-4.453-.576z"/>
+      <path fill="url(#pyB)" d="M23.953 43c1.555-.005 3.04-.138 4.35-.376 3.627-.631 4.197-2.046 4.197-4.124v-3h-9v-1h12.5c2.219 0 4.163-1.333 4.77-4.086.698-3.169.729-5.148 0-8.456-.541-2.463-1.832-4.086-4.051-4.086H34.5v4c0 2.5-2.167 4.706-4.77 4.706H20.5c-2.133 0-3.77 1.756-3.77 3.913v8.087c0 2.093.886 3.576 2.77 3.924 1.443.261 2.943.581 4.453.576z"/>
+      <circle cx="19" cy="9" r="1.5" fill="#fff" opacity=".8"/>
+      <circle cx="29" cy="39" r="1.5" fill="#fff" opacity=".8"/>
+    </svg>
+  `;
+
+  async function loadScripts() {
+    const container = document.getElementById('scripts-list');
+    try {
+      const response = await fetch('/ifcloud/infos/scripts');
+      if (!response.ok) throw new Error('Failed to fetch scripts');
+      const scripts = await response.json();
+
+      if (!scripts.length) {
+        container.innerHTML = '<p>Nenhum script disponível.</p>';
+        return;
+      }
+
+      container.innerHTML = scripts.map(script => `
+        <div class="line script-item" style="display:flex; flex-direction:column; gap:4px; padding:10px 0; border-bottom:1px solid #eee;">
+            <div style="display:flex; align-items:center; gap:10px;">
+            <div style="flex-shrink:0;">${pythonSvg}</div>
+            <strong style="font-size:1em;">${script.name}</strong>
+            </div>
+            <span style="font-size:0.875em; color:#666; padding-left:46px;">${script.description}</span>
+        </div>
+        `).join('');
+
+    } catch (err) {
+      container.innerHTML = '<p>Erro ao carregar scripts. Tente novamente mais tarde.</p>';
+      console.error('[scripts] Error loading scripts:', err);
+    }
+  }
+
+  loadScripts();
+</script>
+
+</body>
 </html>

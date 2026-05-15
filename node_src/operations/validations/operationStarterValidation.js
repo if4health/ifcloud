@@ -46,6 +46,9 @@ const typeRequestSchemas = {
   byIdAndMinuteInterval: byIdAndMinuteIntervalSchema,
 };
 
+// Base schema shared by all request types.
+// Extra fields (minute, initialMinute, finalMinute) are allowed via unknown(true)
+// and validated separately by the typeRequest-specific schema.
 const baseSchema = Joi.object({
   resourceType: Joi.string().required().messages({
     "any.required": "resourceType is required!",
@@ -94,22 +97,29 @@ const baseSchema = Joi.object({
 
 
 /**
- * Validates the request body against the base schema and the
- * typeRequest-specific schema.
+ * Validates the request body and the
+ * typeRequest-specific schema. Collects all errors from both passes
+ * before throwing, so the caller receives a complete error list.
  *
  * @param {Object} data - Request body
- * @throws {ValidationError} if any validation rule fails
+ * @param {string} data.resourceType - Resource type identifier.
+ * @param {string} data.id - Resource ID.
+ * @param {string} data.scriptName - Name of the Python script
+ * @param {boolean} data.returnOnlyFieldsComponents - Whether to return only field components.
+ * @param {"byId"|"byIdAndMinute"|"byIdAndMinuteInterval"} data.typeRequest - Request strategy type.
+ * @param {Array<{index: number|string, changeField: string}>} data.components - List of components to process.
+ * @throws {ValidationError} If any base or type-specific validation rule fails.
  */
 module.exports.operationStarterValidation = (data) => {
   const errors = [];
 
-  // 1. Valida campos base
+  // Step 1: validate fields required by all request types  
   const baseResult = baseSchema.validate(data, { abortEarly: false });
   if (baseResult.error) {
     baseResult.error.details.forEach((err) => errors.push({ message: err.message }));
   }
 
-  // 2. Valida campos específicos do typeRequest — só se o tipo for reconhecido
+  // Step 2: validate fields specific to the given typeRequest (if recognized)  
   const typeSchema = typeRequestSchemas[data?.typeRequest];
   if (typeSchema) {
     const typeResult = typeSchema.validate(data, { abortEarly: false });
