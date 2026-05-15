@@ -1,5 +1,7 @@
 # IFCLOUD
 
+![IF-Cloud (API FHIR para Integração de projetos de saúde digital)](./img/IF-Cloud-paper-CBIS2024.png)
+
 API responsável por executar algoritmos Python sobre recursos FHIR, permitindo o processamento de sinais biomédicos e o retorno automático em formato FHIR.
 
 ---
@@ -212,7 +214,7 @@ Fluxo simplificado:
 
 Imagem mostrando os algoritmos disponíveis.
 
-![Imagem A](./docs/images/A.png)
+![Imagem A](./img/A.png)
 
 ---
 
@@ -220,7 +222,7 @@ Imagem mostrando os algoritmos disponíveis.
 
 Imagem demonstrando os campos utilizados para configurar a execução do algoritmo.
 
-![Imagem B](./docs/images/B.png)
+![Imagem B](./img/B.png)
 
 ---
 
@@ -228,7 +230,7 @@ Imagem demonstrando os campos utilizados para configurar a execução do algorit
 
 Imagem demonstrando o retorno gerado após a execução do script.
 
-![Imagem C](./docs/images/C.png)
+![Imagem C](./img/C.png)
 
 ---
 
