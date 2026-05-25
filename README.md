@@ -154,12 +154,12 @@ CLIENT_SECRET=my_client_secret
 
 | Variável | Descrição |
 |---|---|
-| `FHIR_URL` | URL do servidor FHIR |
+| `FHIR_URL` | URL da API FHIR que realiza as operações CRUD |
 | `PYTHON_EXECUTABLE` | Interpretador Python utilizado para executar os scripts |
 | `PORT` | Porta em que o servidor será executado |
-| `GRANT_TYPE` | Tipo de authenticação no servidor FHIR |
-| `CLIENT_ID` | ID de authenticação no servidor FHIR |
-| `CLIENT_SECRET` | SECRET de authenticação no servidor FHIR |
+| `GRANT_TYPE` | Tipo de autorização da API FHIR - Disponível em: https://if4health.charqueadas.ifsul.edu.br/biofass/auth/device |
+| `CLIENT_ID` | Regra de autenticação na API FHIR - Disponível em: https://if4health.charqueadas.ifsul.edu.br/biofass/auth/device |
+| `CLIENT_SECRET` | Segredo de autorização da API FHIR - Disponível em: https://if4health.charqueadas.ifsul.edu.br/biofass/auth/device |
 
 ---
 
