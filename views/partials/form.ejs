@@ -35,16 +35,16 @@
 
             <!-- Campo: minuto único (byIdAndMinute) -->
             <div class="line" id="field_minute" style="display: none;">
-                <label>Minuto <small class="text-muted">(maior que 0)</small></label>
-                <input id="minute" type="number" name="minute" min="1" placeholder="Ex: 3">
-                <span class="field-error" id="err_minute" style="display:none; color: red; font-size: 12px;">Minuto deve ser maior que 0</span>
+                <label>Minuto <small class="text-muted">(maior ou igual a 0)</small></label>
+                <input id="minute" type="number" name="minute" min="0" placeholder="Ex: 3">
+                <span class="field-error" id="err_minute" style="display:none; color: red; font-size: 12px;">Minuto deve ser maior ou igual a 0</span>
             </div>
 
             <!-- Campos: intervalo de minutos (byIdAndMinuteInterval) -->
             <div class="line" id="field_interval" style="display: none;">
-                <label>Minuto Inicial <small class="text-muted">(maior que 0)</small></label>
-                <input id="initial_minute" type="number" name="initialMinute" min="1" placeholder="Ex: 1">
-                <span class="field-error" id="err_initial_minute" style="display:none; color: red; font-size: 12px;">Deve ser maior que 0</span>
+                <label>Minuto Inicial <small class="text-muted">(maior ou igual a 0)</small></label>
+                <input id="initial_minute" type="number" name="initialMinute" min="0" placeholder="Ex: 1">
+                <span class="field-error" id="err_initial_minute" style="display:none; color: red; font-size: 12px;">Deve ser maior ou igual a 0</span>
                 <label style="margin-top: 8px;">Minuto Final <small class="text-muted">(maior que o inicial)</small></label>
                 <input id="final_minute" type="number" name="finalMinute" min="1" placeholder="Ex: 5">
                 <span class="field-error" id="err_final_minute" style="display:none; color: red; font-size: 12px;">Deve ser maior que o minuto inicial</span>
@@ -148,7 +148,7 @@ function validateMinuteFields(type) {
 
     if (type === 'byIdAndMinute') {
         const minute = parseInt(document.getElementById('minute').value, 10);
-        if (isNaN(minute) || minute <= 0) {
+        if (isNaN(minute) || minute < 0) {
             document.getElementById('err_minute').style.display = 'block';
             valid = false;
         }
@@ -158,7 +158,7 @@ function validateMinuteFields(type) {
         const ini = parseInt(document.getElementById('initial_minute').value, 10);
         const fin = parseInt(document.getElementById('final_minute').value, 10);
 
-        if (isNaN(ini) || ini <= 0) {
+        if (isNaN(ini) || ini < 0) {
             document.getElementById('err_initial_minute').style.display = 'block';
             valid = false;
         }
@@ -169,7 +169,7 @@ function validateMinuteFields(type) {
         }
 
         // Só valida intervalo se ambos os valores são números válidos
-        if (!isNaN(ini) && !isNaN(fin) && ini > 0 && fin > 0 && fin <= ini) {
+        if (!isNaN(ini) && !isNaN(fin) && ini >= 0 && fin > 0 && fin <= ini) {
             document.getElementById('err_final_minute').textContent = 'Deve ser maior que o minuto inicial';
             document.getElementById('err_final_minute').style.display = 'block';
             valid = false;

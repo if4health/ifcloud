@@ -7,19 +7,19 @@ const byIdSchema = Joi.object({
 
 const byIdAndMinuteSchema = Joi.object({
   typeRequest: Joi.string().valid("byIdAndMinute").required(),
-  minute: Joi.number().integer().min(1).required().messages({
+  minute: Joi.number().integer().min(0).required().messages({
     "any.required": "minute is required for byIdAndMinute!",
     "number.base":  "minute must be a number!",
-    "number.min":   "minute must be greater than 0!",
+    "number.min":   "minute must be equals or greater than 0!",
   }),
 }).unknown(true);
 
 const byIdAndMinuteIntervalSchema = Joi.object({
   typeRequest: Joi.string().valid("byIdAndMinuteInterval").required(),
-  initialMinute: Joi.number().integer().min(1).required().messages({
+  initialMinute: Joi.number().integer().min(0).required().messages({
     "any.required": "initialMinute is required for byIdAndMinuteInterval!",
     "number.base":  "initialMinute must be a number!",
-    "number.min":   "initialMinute must be greater than 0!",
+    "number.min":   "initialMinute must be equals or greater than 0!",
   }),
   finalMinute: Joi.number().integer().min(1).required().messages({
     "any.required": "finalMinute is required for byIdAndMinuteInterval!",

@@ -11,6 +11,10 @@ class OperationService {
     const {
       resourceType,
       id,
+      typeRequest,
+      minute = 0,
+      initialMinute = 0,
+      finalMinute = 1,
       scriptName,
       returnOnlyFieldsComponents,
       components,
@@ -19,7 +23,7 @@ class OperationService {
     debug("ID", id)
     debug("resourceType", resourceType)
 
-    const fhirPath = buildFhirUrl("byId", { id, resourceType });
+    const fhirPath = buildFhirUrl(typeRequest, { id, resourceType, minute, initialMinute, finalMinute });
     const resource = await FhirApi.get(fhirPath).catch((error) => {
       throw new FhirResourceError(`Failed to fetch FHIR resource: ${error.message}`);
     });
