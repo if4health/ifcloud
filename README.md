@@ -171,6 +171,9 @@ npm start
 ---
 
 # Verificando funcionamento
+## URL base da aplicação
+
+`http://127.0.0.1:{PORT}`
 
 Após iniciar a aplicação:
 
