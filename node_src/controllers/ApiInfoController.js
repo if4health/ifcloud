@@ -85,7 +85,7 @@ class ApiInfoController {
                 description: "Huff algorithm"
             },
             {
-                name: "python.py",
+                name: "detectArrhythmia.py",
                 description: "Analyzes the heartbeat and detects possible points of arrhythmia"
             }
         ]
